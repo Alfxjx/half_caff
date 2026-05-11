@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>咖啡因人体代谢研究报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['"Noto Serif SC"', 'serif'],
+                        'sans': ['"Noto Sans SC"', 'sans-serif'],
+                    },
+                    colors: {
+                        'coffee': {
+                            50: '#fdf8f0',
+                            100: '#f5e6cc',
+                            200: '#e8cca0',
+                            300: '#d4a76a',
+                            400: '#c0853f',
+                            500: '#a66d2e',
+                            600: '#8b5724',
+                            700: '#6d421c',
+                            800: '#4a2e16',
+                            900: '#2e1c0e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #2e1c0e 0%, #4a2e16 50%, #6d421c 100%); }
+        .card-shadow { box-shadow: 0 4px 24px rgba(46, 28, 14, 0.12); }
+        .glow { box-shadow: 0 0 20px rgba(212, 167, 106, 0.3); }
+        .section-divider { height: 2px; background: linear-gradient(90deg, transparent, #d4a76a, transparent); }
+        .table-row:hover { background-color: #fdf8f0; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #a66d2e; cursor: pointer; }
+        input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #e8cca0; }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .formula-box { background: linear-gradient(135deg, #f5e6cc22, #e8cca022); border: 1px solid #d4a76a44; }
+    </style>
+</head>
+<body class="font-sans bg-coffee-50 text-coffee-900">
+    <!-- Hero -->
+    <header class="gradient-bg text-white py-20 px-6">
+        <div class="max-w-5xl mx-auto text-center animate-fade-in">
+            <div class="text-6xl mb-4">☕</div>
+            <h1 class="font-serif text-4xl md:text-5xl font-bold mb-4 tracking-wide">咖啡因人体代谢研究报告</h1>
+            <p class="text-coffee-200 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+                基于药代动力学文献的完整分析 · 个体化代谢公式推导 · 实用计算工具
+            </p>
+            <div class="mt-8 flex justify-center gap-4 text-sm text-coffee-300">
+                <span class="px-3 py-1 border border-coffee-400/30 rounded-full">一级消除动力学</span>
+                <span class="px-3 py-1 border border-coffee-400/30 rounded-full">CYP1A2 遗传多态性</span>
+                <span class="px-3 py-1 border border-coffee-400/30 rounded-full">一室开放模型</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-16">
+        <!-- Section 1: 代谢途径 -->
+        <section class="animate-fade-in">
+            <h2 class="font-serif text-3xl font-bold text-coffee-800 mb-2">一、咖啡因在体内的代谢途径</h2>
+            <div class="section-divider mb-6"></div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-3">代谢流程</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-coffee-500 text-white flex items-center justify-center text-xs font-bold">1</span>
+                            <span><strong>口服摄入</strong> → 胃肠道吸收 (30-45分钟达峰)</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-coffee-500 text-white flex items-center justify-center text-xs font-bold">2</span>
+                            <span><strong>血液循环</strong> → 分布于全身 (Vd ≈ 0.7 L/kg)</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-coffee-500 text-white flex items-center justify-center text-xs font-bold">3</span>
+                            <span><strong>肝脏代谢</strong> → CYP1A2 酶系去甲基化 (95%)</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-coffee-500 text-white flex items-center justify-center text-xs font-bold">4</span>
+                            <span><strong>肾脏排泄</strong> → 以尿酸形式排出 (3% 原形)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-3">主要代谢产物 (CYP1A2 催化)</h3>
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-100 text-coffee-800">
+                            <tr><th class="text-left p-2 rounded-tl-lg">代谢产物</th><th class="text-left p-2">路径</th><th class="text-right p-2 rounded-tr-lg">占比</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-coffee-100"><td class="p-2 font-medium">副黄嘌呤</td><td class="p-2 text-coffee-600">3-N-去甲基化</td><td class="p-2 text-right font-bold text-coffee-700">84%</td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2 font-medium">可可碱</td><td class="p-2 text-coffee-600">1-N-去甲基化</td><td class="p-2 text-right font-bold text-coffee-700">12%</td></tr>
+                            <tr><td class="p-2 font-medium">茶碱</td><td class="p-2 text-coffee-600">7-N-去甲基化</td><td class="p-2 text-right font-bold text-coffee-700">4%</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="text-xs text-coffee-500 mt-3">副黄嘌呤的药理活性与咖啡因相似，但毒性较低。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Core Formulas -->
+        <section class="animate-fade-in">
+            <h2 class="font-serif text-3xl font-bold text-coffee-800 mb-2">二、核心计算公式推导</h2>
+            <div class="section-divider mb-6"></div>
+            
+            <div class="space-y-6">
+                <!-- Formula 1 -->
+                <div class="formula-box rounded-xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-coffee-600 text-white px-3 py-1 rounded-full text-sm font-bold">公式 1</span>
+                        <h3 class="font-semibold text-lg">单次摄入 N 小时后体内咖啡因剩余量（最简版）</h3>
+                    </div>
+                    <div class="text-center py-4 bg-white/60 rounded-lg">
+                        <span class="text-2xl md:text-3xl font-serif" id="formula1"></span>
+                    </div>
+                    <div class="grid md:grid-cols-4 gap-4 mt-4 text-sm">
+                        <div class="bg-white/80 rounded-lg p-3 text-center"><strong class="text-coffee-700">A(N)</strong><br>N 时刻体内咖啡因量 (mg)</div>
+                        <div class="bg-white/80 rounded-lg p-3 text-center"><strong class="text-coffee-700">X</strong><br>T=0 摄入的咖啡因量 (mg)</div>
+                        <div class="bg-white/80 rounded-lg p-3 text-center"><strong class="text-coffee-700">N</strong><br>经过的时间 (小时)</div>
+                        <div class="bg-white/80 rounded-lg p-3 text-center"><strong class="text-coffee-700">t₁/₂</strong><br>个体消除半衰期 (小时)</div>
+                    </div>
+                </div>
+
+                <!-- Formula 2 -->
+                <div class="formula-box rounded-xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-coffee-600 text-white px-3 py-1 rounded-full text-sm font-bold">公式 2</span>
+                        <h3 class="font-semibold text-lg">多次摄入的叠加计算</h3>
+                    </div>
+                    <div class="text-center py-4 bg-white/60 rounded-lg">
+                        <span class="text-2xl md:text-3xl font-serif" id="formula2"></span>
+                    </div>
+                    <p class="text-sm text-coffee-600 mt-3">Xi = 第 i 次摄入的剂量，Ti = 第 i 次摄入的时间（仅当 N > Ti 时计入）</p>
+                </div>
+
+                <!-- Formula 3 -->
+                <div class="formula-box rounded-xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="bg-coffee-600 text-white px-3 py-1 rounded-full text-sm font-bold">公式 3</span>
+                        <h3 class="font-semibold text-lg">含吸收相的血浆浓度（完整版一室模型）</h3>
+                    </div>
+                    <div class="text-center py-4 bg-white/60 rounded-lg">
+                        <span class="text-xl md:text-2xl font-serif" id="formula3"></span>
+                    </div>
+                    <div class="grid md:grid-cols-6 gap-3 mt-4 text-xs">
+                        <div class="bg-white/80 rounded-lg p-2 text-center"><strong>F</strong><br>生物利用度 ≈1.0</div>
+                        <div class="bg-white/80 rounded-lg p-2 text-center"><strong>ka</strong><br>吸收速率 ≈3.5 h⁻¹</div>
+                        <div class="bg-white/80 rounded-lg p-2 text-center"><strong>ke</strong><br>消除速率 =0.693/t₁/₂</div>
+                        <div class="bg-white/80 rounded-lg p-2 text-center"><strong>Vd</strong><br>分布容积 =0.7×体重</div>
+                        <div class="bg-white/80 rounded-lg p-2 text-center"><strong>X</strong><br>摄入剂量 (mg)</div>
+                        <div class="bg-white/80 rounded-lg p-2 text-center"><strong>C(N)</strong><br>血浆浓度 (mg/L)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Interactive Calculator -->
+        <section class="animate-fade-in">
+            <h2 class="font-serif text-3xl font-bold text-coffee-800 mb-2">三、交互式咖啡因代谢计算器</h2>
+            <div class="section-divider mb-6"></div>
+            
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- Controls -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="bg-white rounded-xl card-shadow p-5">
+                        <h3 class="font-semibold text-coffee-700 mb-4">单次摄入计算</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm text-coffee-600">摄入咖啡因量 (mg)</label>
+                                <input type="range" id="doseSlider" min="50" max="400" value="200" class="w-full mt-1" oninput="updateCalc()">
+                                <div class="text-right font-bold text-coffee-700" id="doseValue">200 mg</div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-coffee-600">经过时间 (小时)</label>
+                                <input type="range" id="timeSlider" min="0" max="24" value="6" step="0.5" class="w-full mt-1" oninput="updateCalc()">
+                                <div class="text-right font-bold text-coffee-700" id="timeValue">6 h</div>
+                            </div>
+                            <div>
+                                <label class="text-sm text-coffee-600">代谢类型</label>
+                                <select id="metabolismType" class="w-full mt-1 p-2 border border-coffee-200 rounded-lg bg-white" onchange="updateCalc()">
+                                    <option value="2">超快速代谢 (t₁/₂=2h)</option>
+                                    <option value="3">快速代谢 CYP1A2 AA (t₁/₂=3h)</option>
+                                    <option value="5" selected>正常代谢 (t₁/₂=5h)</option>
+                                    <option value="7">慢速代谢 CYP1A2 AC (t₁/₂=7h)</option>
+                                    <option value="10">超慢代谢 CYP1A2 CC (t₁/₂=10h)</option>
+                                    <option value="15">孕妇晚期 (t₁/₂=15h)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl card-shadow p-5">
+                        <h3 class="font-semibold text-coffee-700 mb-4">多次摄入模拟</h3>
+                        <div class="space-y-3">
+                            <div class="flex gap-2">
+                                <input type="number" id="multiTime1" placeholder="时间(h)" value="0" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                                <input type="number" id="multiDose1" placeholder="剂量(mg)" value="120" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="multiTime2" placeholder="时间(h)" value="2.5" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                                <input type="number" id="multiDose2" placeholder="剂量(mg)" value="80" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="multiTime3" placeholder="时间(h)" value="6" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                                <input type="number" id="multiDose3" placeholder="剂量(mg)" value="150" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="multiTime4" placeholder="时间(h)" value="" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                                <input type="number" id="multiDose4" placeholder="剂量(mg)" value="" class="w-1/2 p-2 border border-coffee-200 rounded text-sm">
+                            </div>
+                            <button onclick="updateMultiDose()" class="w-full bg-coffee-600 hover:bg-coffee-700 text-white py-2 rounded-lg transition font-medium text-sm">计算累积效应</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-gradient-to-br from-coffee-600 to-coffee-800 rounded-xl p-6 text-white">
+                        <h3 class="text-lg font-semibold mb-2">计算结果</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold" id="resultRemaining">--</div>
+                                <div class="text-coffee-200 text-sm">剩余咖啡因 (mg)</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold" id="resultPercent">--</div>
+                                <div class="text-coffee-200 text-sm">剩余比例</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold" id="resultKe">--</div>
+                                <div class="text-coffee-200 text-sm">消除速率 ke (h⁻¹)</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold" id="resultStatus">--</div>
+                                <div class="text-coffee-200 text-sm">状态评估</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl card-shadow p-4">
+                        <canvas id="singleDoseChart" height="200"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl card-shadow p-4">
+                        <canvas id="multiDoseChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Half-life Table -->
+        <section class="animate-fade-in">
+            <h2 class="font-serif text-3xl font-bold text-coffee-800 mb-2">四、个体化半衰期参考值</h2>
+            <div class="section-divider mb-6"></div>
+            
+            <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-700 text-white">
+                            <tr>
+                                <th class="text-left p-3">代谢类型</th>
+                                <th class="text-left p-3">代表人群</th>
+                                <th class="text-center p-3">t₁/₂ (h)</th>
+                                <th class="text-center p-3">ke (h⁻¹)</th>
+                                <th class="text-center p-3">1h后剩余</th>
+                                <th class="text-center p-3">4h后剩余</th>
+                                <th class="text-center p-3">8h后剩余</th>
+                            </tr>
+                        </thead>
+                        <tbody id="halfLifeTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Factors -->
+        <section class="animate-fade-in">
+            <h2 class="font-serif text-3xl font-bold text-coffee-800 mb-2">五、影响代谢速度的关键因素</h2>
+            <div class="section-divider mb-6"></div>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-red-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">1. 遗传因素 (最重要，解释32-50%变异)</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        <strong>CYP1A2 基因多态性 (rs762551)</strong> 决定代谢速度。AA型代谢最快，CC型最慢，AC型居中。
+                        遗传率 h² = 0.725 (Matthaei et al., 2016)。同卵双胞胎代谢动力学高度一致。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-orange-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">2. 吸烟 (t₁/₂ × 0.6)</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        尼古丁<strong>诱导 CYP1A2 酶活性</strong>，使代谢速度加快约50-60%。戒烟后代谢恢复正常，
+                        此时不改变咖啡因摄入量会导致体内咖啡因水平升高。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-yellow-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">3. 口服避孕药 (t₁/₂ × 2.0)</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        雌激素<strong>竞争性抑制 CYP1A2</strong>，使半衰期几乎翻倍 (Patwardhan et al., 1980)。
+                        停药后代谢能力恢复。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-pink-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">4. 妊娠晚期 (t₁/₂ × 3.0)</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        孕酮水平升高抑制 CYP1A2 活性，半衰期可达 <strong>15-18 小时</strong>。
+                        建议孕妇每日咖啡因摄入不超过 200mg (EFSA 建议)。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-purple-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">5. 肝功能状态 (t₁/₂ × 2~4)</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        咖啡因几乎完全依赖肝脏代谢。<strong>肝硬化/肝炎</strong>患者清除率可降至正常的 1/4。
+                        咖啡因代谢测试实际上被用作肝功能评估工具 (Renner et al., 1984)。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-blue-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">6. 年龄 (老年人 t₁/₂ × 1.3)</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        新生儿半衰期可达 30-100 小时（肝酶未发育），6个月后接近成人。
+                        老年人肝酶活性下降，代谢速度降低约30%。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-indigo-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">7. 饮酒 (t₁/₂ × 1.4)</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        酒精<strong>抑制 CYP1A2 活性</strong>。研究显示每日 50g 酒精可使咖啡因半衰期延长 72%，清除率降低 36%。
+                    </p>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5 border-l-4 border-green-400">
+                    <h3 class="font-semibold text-lg text-coffee-700 mb-2">8. 药物相互作用</h3>
+                    <p class="text-sm text-coffee-600 leading-relaxed">
+                        氟伏沙明 (SSRI) 可显著抑制代谢，半衰期延至 12h+；西咪替丁、环丙沙星减慢代谢；
+                        部分抗癫痫药可能加速代谢。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Coffee Caffeine Content -->
+        <section class="animate-fade-in">
+            <h2 class="font-serif text-3xl font-bold text-coffee-800 mb-2">六、一杯咖啡含多少咖啡因</h2>
+            <div class="section-divider mb-6"></div>
+            
+            <div class="bg-white rounded-xl card-shadow p-6 mb-6">
+                <h3 class="font-semibold text-lg text-coffee-700 mb-3">核心计算公式</h3>
+                <div class="formula-box rounded-lg p-4 text-center">
+                    <span class="text-xl font-serif">咖啡因 (mg) = 咖啡粉重量 (g) × 豆种咖啡因% × 1000 × 萃取系数</span>
+                </div>
+                <p class="text-sm text-coffee-600 mt-3">简化记忆：<strong>阿拉比卡每克粉 ≈ 10mg 咖啡因</strong>（考虑萃取率后）</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl card-shadow p-5">
+                    <h3 class="font-semibold text-coffee-700 mb-3">豆种咖啡因含量（干重）</h3>
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-100"><tr><th class="text-left p-2">品种</th><th class="text-right p-2">咖啡因%</th></tr></thead>
+                        <tbody>
+                            <tr class="border-b"><td class="p-2">罗布斯塔 Robusta</td><td class="p-2 text-right font-bold">2.2-2.7%</td></tr>
+                            <tr class="border-b"><td class="p-2">阿拉比卡 Arabica</td><td class="p-2 text-right font-bold">1.2-1.5%</td></tr>
+                            <tr class="border-b"><td class="p-2">低因品种 Laurina</td><td class="p-2 text-right font-bold">0.4-0.6%</td></tr>
+                            <tr><td class="p-2">脱因咖啡 Decaf</td><td class="p-2 text-right font-bold">&lt;0.1%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-white rounded-xl card-shadow p-5">
+                    <h3 class="font-semibold text-coffee-700 mb-3">冲泡方式萃取系数</h3>
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-100"><tr><th class="text-left p-2">冲泡方式</th><th class="text-right p-2">萃取系数</th></tr></thead>
+                        <tbody>
+                            <tr class="border-b"><td class="p-2">冷萃 Cold Brew</td><td class="p-2 text-right font-bold">0.80-0.90</td></tr>
+                            <tr class="border-b"><td class="p-2">手冲/滴滤 Pour Over</td><td class="p-2 text-right font-bold">0.85-0.90</td></tr>
+                            <tr class="border-b"><td class="p-2">法压壶 French Press</td><td class="p-2 text-right font-bold">0.85-0.90</td></tr>
+                            <tr class="border-b"><td class="p-2">爱乐压 AeroPress</td><td class="p-2 text-right font-bold">0.80</td></tr>
+                            <tr class="border-b"><td class="p-2">摩卡壶 Moka Pot</td><td class="p-2 text-right font-bold">0.75-0.80</td></tr>
+                            <tr><td class="p-2">意式浓缩 Espresso</td><td class="p-2 text-right font-bold">0.70</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-white rounded-xl card-shadow p-5">
+                <h3 class="font-semibold text-coffee-700 mb-3">常见饮品的咖啡因含量速查</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-700 text-white">
+                            <tr>
+                                <th class="text-left p-3">饮品</th>
+                                <th class="text-center p-3">容量</th>
+                                <th class="text-center p-3">咖啡因 (mg)</th>
+                                <th class="text-left p-3">备注</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drinkTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Key Literature -->
+        <section class="animate-fade-in">
+            <h2 class="font-serif text-3xl font-bold text-coffee-800 mb-2">七、关键参考文献</h2>
+            <div class="section-divider mb-6"></div>
+            
+            <div class="bg-white rounded-xl card-shadow p-6">
+                <div class="grid md:grid-cols-2 gap-4 text-sm" id="literatureList"></div>
+            </div>
+        </section>
+
+        <!-- Summary Box -->
+        <section class="animate-fade-in">
+            <div class="bg-gradient-to-br from-coffee-600 to-coffee-800 rounded-xl p-8 text-white text-center">
+                <h2 class="font-serif text-2xl font-bold mb-4">研究总结</h2>
+                <p class="text-coffee-100 leading-relaxed max-w-3xl mx-auto">
+                    咖啡因代谢速度是一个<strong>多因素调控</strong>的复杂性状。一级消除动力学模型（一室开放模型）
+                    已被大量文献证实可精确描述咖啡因体内过程。个体差异的核心在于 <strong>CYP1A2 基因多态性</strong>
+                    决定的基础代谢能力，叠加吸烟、激素状态、肝功能、药物等环境因素的调节。
+                    理解这些机制有助于制定个体化的咖啡因摄入策略，平衡提神效果与健康风险。
+                </p>
+                <div class="mt-6 flex justify-center gap-6 text-sm text-coffee-200">
+                    <div>
+                        <div class="text-2xl font-bold text-white">400mg</div>
+                        <div>成人日安全上限</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-white">3-5h</div>
+                        <div>平均半衰期</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-white">40x</div>
+                        <div>个体差异幅度</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="gradient-bg text-coffee-300 py-8 text-center text-sm">
+        <p>基于药代动力学文献综合整理 | 数据仅供参考，不构成医疗建议</p>
+        <p class="mt-1">参考文献来源: PubMed, Google Scholar, EFSA, FDA</p>
+    </footer>
+
+    <script>
+        // KaTeX render
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+        });
+
+        // Set formulas manually for better control
+        document.getElementById('formula1').innerHTML = '$$A(N) = X \\times \\left(\\frac{1}{2}\\right)^{N / t_{1/2}}$$';
+        document.getElementById('formula2').innerHTML = '$$A_{total}(N) = \\sum_{i} X_i \\times \\left(\\frac{1}{2}\\right)^{(N-T_i) / t_{1/2}}$$';
+        document.getElementById('formula3').innerHTML = '$$C(N) = \\frac{F \\cdot X \\cdot k_a}{V_d \\cdot (k_a - k_e)} \\times (e^{-k_e N} - e^{-k_a N})$$';
+
+        // Data
+        const halfLifeData = [
+            {type: '超快速代谢者', pop: '极少数', hl: 2.0},
+            {type: '快速代谢者 (AA)', pop: '~45%人群', hl: 3.0},
+            {type: '正常代谢者', pop: '一般健康成人', hl: 5.0},
+            {type: '慢速代谢者 (AC)', pop: '~45%人群', hl: 7.0},
+            {type: '超慢代谢者 (CC)', pop: '~10%人群', hl: 10.0},
+            {type: '口服避孕药使用者', pop: '服用OC女性', hl: 10.0},
+            {type: '孕妇(晚期)', pop: '妊娠晚期女性', hl: 15.0},
+        ];
+
+        const drinkData = [
+            {name: '意式浓缩 (Single)', size: '30ml', caffeine: '60-75', note: '浓度最高'},
+            {name: '意式浓缩 (Double)', size: '60ml', caffeine: '120-150', note: '咖啡店标准'},
+            {name: '滴滤/美式咖啡', size: '240ml', caffeine: '95-120', note: '最普遍的基准'},
+            {name: '大杯滴滤咖啡', size: '480ml', caffeine: '200-300', note: '接近日上限'},
+            {name: '手冲咖啡', size: '240ml', caffeine: '80-130', note: '取决于粉量'},
+            {name: '冷萃咖啡', size: '240ml', caffeine: '150-200', note: '高粉水比'},
+            {name: '大杯冷萃', size: '480ml', caffeine: '280-320', note: '可能超安全量'},
+            {name: '拿铁/卡布奇诺', size: '350ml', caffeine: '63-126', note: '取决于浓缩份数'},
+            {name: '速溶咖啡', size: '240ml', caffeine: '60-80', note: '品牌差异大'},
+            {name: '红茶', size: '240ml', caffeine: '40-50', note: ''},
+            {name: '绿茶', size: '240ml', caffeine: '20-30', note: ''},
+            {name: '可乐', size: '330ml', caffeine: '30-40', note: ''},
+        ];
+
+        const literature = [
+            {authors: 'Alsabri et al.', year: '2018', title: 'Kinetic and dynamic description of caffeine', journal: 'J Caffeine Adenosine Res', cites: 94},
+            {authors: 'Matthaei et al.', year: '2016', title: 'Heritability of caffeine metabolism: CYP1A2 activity', journal: 'Clin Pharmacol Ther', cites: 42},
+            {authors: 'Günes & Dahl', year: '2008', title: 'Variation in CYP1A2 activity and clinical implications', journal: 'Pharmacogenomics', cites: 335},
+            {authors: 'Carrillo & Benitez', year: '2000', title: 'Clinically significant pharmacokinetic interactions of caffeine', journal: 'Clin Pharmacokinet', cites: 593},
+            {authors: 'Rétey et al.', year: '2007', title: 'ADORA2A variation and sensitivity to caffeine effects on sleep', journal: 'Clin Pharmacol Ther', cites: 375},
+            {authors: 'Childs et al.', year: '2008', title: 'ADORA2A and DRD2 polymorphisms and caffeine-induced anxiety', journal: 'Neuropsychopharmacology', cites: 349},
+            {authors: 'Patwardhan et al.', year: '1980', title: 'Impaired elimination of caffeine by oral contraceptive steroids', journal: 'J Lab Clin Med', cites: 257},
+            {authors: 'Csajka et al.', year: '2005', title: 'Mechanistic PK modelling of caffeine in healthy subjects', journal: 'Br J Clin Pharmacol', cites: 46},
+            {authors: 'Newton et al.', year: '1981', title: 'Plasma and salivary pharmacokinetics of caffeine', journal: 'Eur J Clin Pharmacol', cites: 296},
+            {authors: 'Barreto et al.', year: '2021', title: 'CYP1A2 genotype, physiological responses and exercise', journal: 'Eur J Appl Physiol', cites: 87},
+        ];
+
+        // Populate tables
+        function populateTables() {
+            const hlBody = document.getElementById('halfLifeTable');
+            halfLifeData.forEach((row, i) => {
+                const ke = (0.693 / row.hl).toFixed(4);
+                const r1 = ((0.5)**(1/row.hl)*100).toFixed(1);
+                const r4 = ((0.5)**(4/row.hl)*100).toFixed(1);
+                const r8 = ((0.5)**(8/row.hl)*100).toFixed(1);
+                hlBody.innerHTML += `<tr class="border-b border-coffee-100 table-row ${i%2===0?'bg-white':'bg-coffee-50/50'}">
+                    <td class="p-3 font-medium">${row.type}</td>
+                    <td class="p-3 text-coffee-600">${row.pop}</td>
+                    <td class="p-3 text-center font-bold text-coffee-700">${row.hl}h</td>
+                    <td class="p-3 text-center">${ke}</td>
+                    <td class="p-3 text-center">${r1}%</td>
+                    <td class="p-3 text-center">${r4}%</td>
+                    <td class="p-3 text-center">${r8}%</td>
+                </tr>`;
+            });
+
+            const drinkBody = document.getElementById('drinkTable');
+            drinkData.forEach((row, i) => {
+                drinkBody.innerHTML += `<tr class="border-b border-coffee-100 table-row ${i%2===0?'bg-white':'bg-coffee-50/50'}">
+                    <td class="p-3 font-medium">${row.name}</td>
+                    <td class="p-3 text-center">${row.size}</td>
+                    <td class="p-3 text-center font-bold text-coffee-700">${row.caffeine}mg</td>
+                    <td class="p-3 text-coffee-600">${row.note}</td>
+                </tr>`;
+            });
+
+            const litDiv = document.getElementById('literatureList');
+            literature.forEach(paper => {
+                litDiv.innerHTML += `<div class="p-3 bg-coffee-50 rounded-lg">
+                    <div class="font-medium text-coffee-800">${paper.title}</div>
+                    <div class="text-xs text-coffee-500 mt-1">${paper.authors} (${paper.year}) · ${paper.journal} · 被引${paper.cites}次</div>
+                </div>`;
+            });
+        }
+
+        // Charts
+        let singleChart, multiChart;
+
+        function initCharts() {
+            const ctx1 = document.getElementById('singleDoseChart').getContext('2d');
+            singleChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length:25}, (_,i) => i),
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: '单次摄入衰减曲线对比', font: {size: 14} },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: '时间 (小时)' } },
+                        y: { title: { display: true, text: '体内咖啡因 (mg)' }, min: 0 }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('multiDoseChart').getContext('2d');
+            multiChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length:97}, (_,i) => i*0.25),
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: '多次摄入累积效应', font: {size: 14} },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: '时间 (小时)' } },
+                        y: { title: { display: true, text: '体内咖啡因 (mg)' }, min: 0 }
+                    }
+                }
+            });
+        }
+
+        function updateCalc() {
+            const dose = parseFloat(document.getElementById('doseSlider').value);
+            const hours = parseFloat(document.getElementById('timeSlider').value);
+            const hl = parseFloat(document.getElementById('metabolismType').value);
+
+            document.getElementById('doseValue').textContent = dose + ' mg';
+            document.getElementById('timeValue').textContent = hours + ' h';
+
+            const ke = 0.693 / hl;
+            const remaining = dose * Math.pow(0.5, hours / hl);
+            const percent = (remaining / dose * 100).toFixed(1);
+
+            document.getElementById('resultRemaining').textContent = remaining.toFixed(1) + ' mg';
+            document.getElementById('resultPercent').textContent = percent + '%';
+            document.getElementById('resultKe').textContent = ke.toFixed(4);
+
+            let status = '';
+            if (remaining > 100) status = '高 ⚠️';
+            else if (remaining > 50) status = '中等';
+            else if (remaining > 10) status = '低';
+            else status = '可忽略';
+            document.getElementById('resultStatus').textContent = status;
+
+            updateSingleChart(dose, hl);
+        }
+
+        function updateSingleChart(dose, hl) {
+            const times = Array.from({length:25}, (_,i) => i);
+            const colors = {
+                2: '#06A77D', 3: '#2E86AB', 5: '#A23B72', 
+                7: '#F18F01', 10: '#C73E1D', 15: '#6B2D5C'
+            };
+            const labels = {
+                2: '超快速(2h)', 3: '快速AA(3h)', 5: '正常(5h)',
+                7: '慢速AC(7h)', 10: '超慢CC(10h)', 15: '孕妇(15h)'
+            };
+
+            singleChart.data.datasets = [2,3,5,7,10,15].map(h => ({
+                label: labels[h],
+                data: times.map(t => dose * Math.pow(0.5, t/h)),
+                borderColor: colors[h],
+                backgroundColor: colors[h] + '20',
+                fill: false,
+                tension: 0.4,
+                pointRadius: 0,
+                borderWidth: h === hl ? 3 : 1.5
+            }));
+            singleChart.update();
+        }
+
+        function updateMultiDose() {
+            const hl = parseFloat(document.getElementById('metabolismType').value);
+            const doses = [];
+            for (let i = 1; i <= 4; i++) {
+                const t = parseFloat(document.getElementById('multiTime'+i).value);
+                const d = parseFloat(document.getElementById('multiDose'+i).value);
+                if (!isNaN(t) && !isNaN(d) && d > 0) doses.push([t, d]);
+            }
+
+            const times = Array.from({length:97}, (_,i) => i*0.25);
+            const amounts = times.map(t => {
+                let total = 0;
+                for (const [dt, dd] of doses) {
+                    if (t >= dt) total += dd * Math.pow(0.5, (t-dt)/hl);
+                }
+                return total;
+            });
+
+            multiChart.data.datasets = [{
+                label: '体内总咖啡因',
+                data: amounts,
+                borderColor: '#2E86AB',
+                backgroundColor: '#2E86AB20',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0
+            }];
+
+            // Add dose markers
+            const markerData = new Array(times.length).fill(null);
+            doses.forEach(([dt, dd]) => {
+                const idx = Math.round(dt * 4);
+                if (idx < times.length) {
+                    let base = 0;
+                    for (const [dt2, dd2] of doses) {
+                        if (dt > dt2) base += dd2 * Math.pow(0.5, (dt-dt2)/hl);
+                    }
+                    markerData[idx] = base + dd;
+                }
+            });
+
+            multiChart.data.datasets.push({
+                label: '摄入时刻',
+                data: markerData,
+                borderColor: '#C73E1D',
+                backgroundColor: '#C73E1D',
+                pointRadius: 6,
+                showLine: false
+            });
+
+            multiChart.update();
+        }
+
+        // Initialize
+        populateTables();
+        initCharts();
+        updateCalc();
+        updateMultiDose();
+    </script>
+</body>
+</html>

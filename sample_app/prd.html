@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HalfCaff 功能设计文档 (PRD)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @layer base {
+            body { font-family: 'Noto Sans SC', sans-serif; }
+            h1, h2, h3 { font-family: 'Noto Serif SC', serif; }
+            code, pre { font-family: 'JetBrains Mono', monospace; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        coffee: {
+                            50: '#fdf8f0', 100: '#f5e6cc', 200: '#e8cca0', 300: '#d4a76a',
+                            400: '#c0853f', 500: '#a66d2e', 600: '#8b5724', 700: '#6d421c',
+                            800: '#4a2e16', 900: '#2e1c0e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .toc-link { transition: all 0.2s; }
+        .toc-link:hover { color: #6F4E37; transform: translateX(4px); }
+        .section-card { transition: box-shadow 0.3s; }
+        .section-card:hover { box-shadow: 0 8px 32px rgba(46,28,14,0.1); }
+        .wireframe-box { background: repeating-linear-gradient(45deg, #f5e6cc22, #f5e6cc22 8px, #f5e6cc44 8px, #f5e6cc44 16px); border: 2px dashed #d4a76a; }
+        .tag { @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium; }
+        .gradient-bar { height: 4px; background: linear-gradient(90deg, #2e1c0e, #6F4E37, #d4a76a, #e8cca0); }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        .nav-fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; }
+        .main-content { margin-left: 280px; }
+        @media (max-width: 1024px) { .main-content { margin-left: 0; } }
+        .active-section { color: #6F4E37 !important; font-weight: 600 !important; }
+        .side-nav { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-coffee-50 text-coffee-900 antialiased">
+    <!-- Gradient Top Bar -->
+    <div class="gradient-bar"></div>
+
+    <!-- Side Navigation -->
+    <nav class="side-nav bg-white border-r border-coffee-200 hidden lg:block z-40">
+        <div class="p-6">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">☕</span>
+                <span class="text-xl font-bold text-coffee-800 font-serif">HalfCaff</span>
+            </div>
+            <p class="text-xs text-coffee-400 mb-6">功能设计文档 v1.0</p>
+            <ul class="space-y-1 text-sm">
+                <li><a href="#overview" class="toc-link block py-1.5 text-coffee-600">1. 产品概述</a></li>
+                <li><a href="#users" class="toc-link block py-1.5 text-coffee-600">2. 用户画像</a></li>
+                <li><a href="#architecture" class="toc-link block py-1.5 text-coffee-600">3. 功能架构</a></li>
+                <li class="ml-3"><a href="#dashboard" class="toc-link block py-1 text-coffee-500 text-xs">3.1 仪表盘</a></li>
+                <li class="ml-3"><a href="#timeline" class="toc-link block py-1 text-coffee-500 text-xs">3.2 时间线</a></li>
+                <li class="ml-3"><a href="#record" class="toc-link block py-1 text-coffee-500 text-xs">3.3 摄入记录</a></li>
+                <li class="ml-3"><a href="#explore" class="toc-link block py-1 text-coffee-500 text-xs">3.4 探索</a></li>
+                <li class="ml-3"><a href="#profile" class="toc-link block py-1 text-coffee-500 text-xs">3.5 个人档案</a></li>
+                <li><a href="#model" class="toc-link block py-1.5 text-coffee-600">4. 核心数据模型</a></li>
+                <li><a href="#formula" class="toc-link block py-1.5 text-coffee-600">5. 科学计算公式</a></li>
+                <li><a href="#uiux" class="toc-link block py-1.5 text-coffee-600">6. UI/UX 设计规范</a></li>
+                <li><a href="#tech" class="toc-link block py-1.5 text-coffee-600">7. 技术架构</a></li>
+                <li><a href="#roadmap" class="toc-link block py-1.5 text-coffee-600">8. 开发路线图</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content max-w-4xl mx-auto lg:ml-[280px] px-6 py-10">
+        <!-- Header -->
+        <header class="mb-12 pb-8 border-b border-coffee-200">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="text-4xl">☕</span>
+                <div>
+                    <h1 class="text-4xl font-bold text-coffee-900">HalfCaff</h1>
+                    <p class="text-lg text-coffee-500">个性化咖啡因管理应用 · 功能设计文档</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <span class="tag bg-coffee-100 text-coffee-700">PRD</span>
+                <span class="tag bg-coffee-100 text-coffee-700">v1.0</span>
+                <span class="tag bg-coffee-100 text-coffee-700">2025-05-11</span>
+                <span class="tag bg-emerald-100 text-emerald-700">MVP</span>
+            </div>
+        </header>
+
+        <!-- 1. Overview -->
+        <section id="overview" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">1</span>
+                产品概述
+            </h2>
+            <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                <p class="text-lg text-coffee-700 leading-relaxed mb-4">
+                    <strong>HalfCaff</strong> 是一款基于药代动力学（Pharmacokinetics）的个性化咖啡因管理工具。
+                    它通过基于用户参数的科学估算，帮助用户追踪体内咖啡因残留、预测代谢趋势、优化饮用时机，
+                    从而在享受提神效果的同时，尽量降低对睡眠和健康的潜在影响。
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-coffee-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl mb-2">🧮</div>
+                        <h4 class="font-semibold text-coffee-700 text-sm">药代动力学引擎</h4>
+                        <p class="text-xs text-coffee-500 mt-1">一级消除动力学 · 一室模型 · 个性化半衰期</p>
+                    </div>
+                    <div class="bg-coffee-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl mb-2">📊</div>
+                        <h4 class="font-semibold text-coffee-700 text-sm">实时可视化</h4>
+                        <p class="text-xs text-coffee-500 mt-1">24h 趋势曲线 · 入睡风险提示 · 保守建议</p>
+                    </div>
+                    <div class="bg-coffee-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl mb-2">🧬</div>
+                        <h4 class="font-semibold text-coffee-700 text-sm">个性化档案</h4>
+                        <p class="text-xs text-coffee-500 mt-1">CYP1A2 基因型 · 8大影响因素 · 代谢测试</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p class="text-sm text-amber-800">
+                        <strong>核心价值主张：</strong>
+                        让每一杯咖啡都更可控 —— 在提神效果与晚间休息之间做出更稳妥的选择。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. User Personas -->
+        <section id="users" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">2</span>
+                用户画像
+            </h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">☕</span>
+                        <div>
+                            <h4 class="font-semibold text-coffee-800">咖啡依赖者</h4>
+                            <p class="text-xs text-coffee-500">占目标用户 35%</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-coffee-600 mb-2"><strong>痛点：</strong>下午喝了咖啡晚上睡不着，不确定"现在还能不能喝"</p>
+                    <p class="text-sm text-coffee-600"><strong>场景：</strong>查看体内咖啡因水平，获得晚间摄入风险提示</p>
+                </div>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">💼</span>
+                        <div>
+                            <h4 class="font-semibold text-coffee-800">高压上班族</h4>
+                            <p class="text-xs text-coffee-500">占目标用户 30%</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-coffee-600 mb-2"><strong>痛点：</strong>靠咖啡续命但影响睡眠质量，需要合理安排一天的节奏</p>
+                    <p class="text-sm text-coffee-600"><strong>场景：</strong>规划最佳摄入时间，降低影响夜间睡眠的概率</p>
+                </div>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">🏃</span>
+                        <div>
+                            <h4 class="font-semibold text-coffee-800">运动爱好者</h4>
+                            <p class="text-xs text-coffee-500">占目标用户 15%</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-coffee-600 mb-2"><strong>痛点：</strong>想知道运动前多久喝咖啡最有效</p>
+                    <p class="text-sm text-coffee-600"><strong>场景：</strong>咖啡因峰值配合训练时间，优化运动表现</p>
+                </div>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">🤰</span>
+                        <div>
+                            <h4 class="font-semibold text-coffee-800">准妈妈/特殊人群</h4>
+                            <p class="text-xs text-coffee-500">占目标用户 10%</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-coffee-600 mb-2"><strong>痛点：</strong>需严格控制在 200mg 以下，代谢变慢更敏感</p>
+                    <p class="text-sm text-coffee-600"><strong>场景：</strong>实时追踪累积量，孕期模式自动调整上限</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Feature Architecture -->
+        <section id="architecture" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">3</span>
+                功能架构
+            </h2>
+
+            <!-- Architecture Diagram -->
+            <div class="bg-white rounded-xl border border-coffee-200 p-6 mb-6">
+                <div class="text-center mb-4 p-3 bg-coffee-700 text-white rounded-lg font-semibold">HalfCaff</div>
+                <div class="grid grid-cols-5 gap-2 text-center text-xs">
+                    <div class="p-3 bg-coffee-100 rounded-lg">
+                        <div class="text-lg mb-1">◉</div>
+                        <div class="font-medium text-coffee-700">仪表盘</div>
+                        <div class="text-coffee-500 mt-1">Dashboard</div>
+                    </div>
+                    <div class="p-3 bg-coffee-100 rounded-lg">
+                        <div class="text-lg mb-1">◈</div>
+                        <div class="font-medium text-coffee-700">时间线</div>
+                        <div class="text-coffee-500 mt-1">Timeline</div>
+                    </div>
+                    <div class="p-3 bg-coffee-100 rounded-lg">
+                        <div class="text-lg mb-1">⊕</div>
+                        <div class="font-medium text-coffee-700">记录</div>
+                        <div class="text-coffee-500 mt-1">Track</div>
+                    </div>
+                    <div class="p-3 bg-coffee-100 rounded-lg">
+                        <div class="text-lg mb-1">◇</div>
+                        <div class="font-medium text-coffee-700">探索</div>
+                        <div class="text-coffee-500 mt-1">Explore</div>
+                    </div>
+                    <div class="p-3 bg-coffee-100 rounded-lg">
+                        <div class="text-lg mb-1">○</div>
+                        <div class="font-medium text-coffee-700">档案</div>
+                        <div class="text-coffee-500 mt-1">Profile</div>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-coffee-50 rounded-lg text-center text-sm text-coffee-600">
+                    <strong>底层引擎：</strong>药代动力学估算 · 个体化半衰期模型 · 饮品数据库 · 风险提示引擎
+                </div>
+            </div>
+
+            <!-- 3.1 Dashboard -->
+            <div id="dashboard" class="mb-8">
+                <h3 class="text-xl font-bold text-coffee-700 mb-3">3.1 仪表盘 (Dashboard)</h3>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                    <p class="text-sm text-coffee-600 mb-4">用户打开 App 看到的第一个页面，所有核心信息一目了然。</p>
+                    <div class="wireframe-box rounded-xl p-6 mb-4">
+                        <div class="text-center text-coffee-400 text-sm mb-4">页面结构 Wireframe</div>
+                        <div class="space-y-3 max-w-xs mx-auto">
+                            <div class="flex justify-between text-xs text-coffee-500">
+                                <span>"Good Morning, Alex"</span>
+                                <span class="tag bg-emerald-100 text-emerald-700 text-[10px]">代谢中</span>
+                            </div>
+                            <div class="w-36 h-36 mx-auto rounded-full border-[10px] border-coffee-200 flex flex-col items-center justify-center">
+                                <span class="text-2xl font-bold text-coffee-800">87</span>
+                                <span class="text-xs text-coffee-500">mg</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                                <div class="bg-white rounded p-2"><strong>240</strong>mg<br><span class="text-[10px] text-coffee-500">今日累计</span></div>
+                                <div class="bg-white rounded p-2"><strong>5</strong>h<br><span class="text-[10px] text-coffee-500">半衰期</span></div>
+                                <div class="bg-white rounded p-2"><strong>160</strong>mg<br><span class="text-[10px] text-coffee-500">预算余额</span></div>
+                            </div>
+                            <div class="h-2 bg-coffee-200 rounded-full"><div class="h-full bg-coffee-600 rounded-full" style="width:60%"></div></div>
+                            <div class="bg-amber-50 rounded p-2 text-xs text-amber-700 text-center">"当前残留偏高，建议 3 小时内避免新增摄入"</div>
+                            <div class="bg-white rounded p-2 text-xs text-center">迷你时间线曲线 (8h→未来16h)</div>
+                            <div class="space-y-1">
+                                <div class="bg-white rounded p-2 text-xs flex justify-between"><span>☕ 美式咖啡 · 3.5小时前</span><strong>+200mg</strong></div>
+                                <div class="bg-white rounded p-2 text-xs flex justify-between"><span>🥛 拿铁 · 1小时前</span><strong>+80mg</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-coffee-700 text-sm mb-2">功能清单</h4>
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-100 text-coffee-800 text-xs">
+                            <tr><th class="text-left p-2">功能</th><th class="text-left p-2">描述</th><th class="text-center p-2">优先级</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-coffee-100"><td class="p-2">环形进度表</td><td class="p-2 text-coffee-600">体内咖啡因量可视化，颜色随水平变化（绿/黄/红）</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">日预算进度条</td><td class="p-2 text-coffee-600">400mg(或孕妇200mg)的消耗进度</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">风险提示卡片</td><td class="p-2 text-coffee-600">基于当前残留、目标入睡时间和用户参数给出保守建议</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">迷你时间线</td><td class="p-2 text-coffee-600">过去8h到未来16h的咖啡因曲线预览</td><td class="p-2 text-center"><span class="tag bg-amber-100 text-amber-700">P1</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">最近摄入记录</td><td class="p-2 text-coffee-600">最近6条记录，显示剩余估算量</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr><td class="p-2">关键数据三宫格</td><td class="p-2 text-coffee-600">今日累计/半衰期/预算余额</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3.2 Timeline -->
+            <div id="timeline" class="mb-8">
+                <h3 class="text-xl font-bold text-coffee-700 mb-3">3.2 时间线 (Timeline)</h3>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                    <p class="text-sm text-coffee-600 mb-4">App 最核心的差异化功能 —— 24小时体内咖啡因残留趋势的估算曲线。</p>
+                    <div class="wireframe-box rounded-xl p-6 mb-4">
+                        <div class="text-center text-coffee-400 text-sm mb-4">页面结构 Wireframe</div>
+                        <div class="space-y-3 max-w-xs mx-auto">
+                            <div class="bg-white rounded p-3 h-32 relative">
+                                <div class="text-[10px] text-coffee-400 mb-1">体内咖啡因 (mg)</div>
+                                <svg viewBox="0 0 200 80" class="w-full h-20">
+                                    <path d="M0,60 Q30,10 50,5 Q80,0 100,20 Q130,50 160,55 Q180,60 200,65" fill="none" stroke="#6F4E37" stroke-width="2"/>
+                                    <line x1="60" y1="0" x2="60" y2="80" stroke="#C0392B" stroke-width="1" stroke-dasharray="3"/>
+                                    <text x="55" y="10" font-size="8" fill="#C0392B">现在</text>
+                                    <rect x="120" y="0" width="80" height="80" fill="#27AE60" opacity="0.08"/>
+                                </svg>
+                                <div class="flex justify-between text-[10px] text-coffee-400 mt-1">
+                                    <span>8AM</span><span>12PM</span><span>4PM</span><span>8PM</span><span>12AM</span><span>8AM</span>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded p-3">
+                                <div class="text-xs text-coffee-500 mb-2">☕ 如果我现在再喝一杯...</div>
+                                <div class="h-1 bg-coffee-200 rounded-full"><div class="h-full bg-coffee-600 rounded-full" style="width:45%"></div></div>
+                                <div class="text-[10px] text-coffee-400 mt-1">拖动预览 0-300mg 的影响</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs text-center">
+                                <div class="bg-white rounded p-2"><strong>350mg</strong><br><span class="text-[10px] text-coffee-500">峰值</span></div>
+                                <div class="bg-emerald-50 rounded p-2"><strong>10:30 PM</strong><br><span class="text-[10px] text-emerald-600">预计较低风险</span></div>
+                                <div class="bg-white rounded p-2"><strong>2:00 AM</strong><br><span class="text-[10px] text-coffee-500">完全代谢</span></div>
+                                <div class="bg-white rounded p-2"><strong>5h</strong><br><span class="text-[10px] text-coffee-500">半衰期</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-coffee-700 text-sm mb-2">功能清单</h4>
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-100 text-coffee-800 text-xs">
+                            <tr><th class="text-left p-2">功能</th><th class="text-left p-2">描述</th><th class="text-center p-2">优先级</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-coffee-100"><td class="p-2">24h 预测曲线</td><td class="p-2 text-coffee-600">每15分钟一个数据点，基于药代动力学公式实时计算</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">交互式数据点</td><td class="p-2 text-coffee-600">点击曲线任意点查看该时刻残留量和对应风险提示</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">颜色编码区域</td><td class="p-2 text-coffee-600">绿色=低残留 / 黄色=注意 / 红色=高残留，阈值可随睡眠目标调整</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">What-if 模拟器</td><td class="p-2 text-coffee-600">拖动滑块预览不同剂量摄入后的影响，虚线展示预测变化</td><td class="p-2 text-center"><span class="tag bg-amber-100 text-amber-700">P1</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">关键时间节点</td><td class="p-2 text-coffee-600">峰值时间、预计低风险入睡窗口、完全代谢时间</td><td class="p-2 text-center"><span class="tag bg-amber-100 text-amber-700">P1</span></td></tr>
+                            <tr><td class="p-2">摄入标记点</td><td class="p-2 text-coffee-600">在曲线上标记每次摄入的时刻和剂量</td><td class="p-2 text-center"><span class="tag bg-amber-100 text-amber-700">P1</span></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                        <strong>说明：</strong>时间线用于估算咖啡因残留与潜在风险，不应表述为确定性的医疗或睡眠判断。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3.3 Record -->
+            <div id="record" class="mb-8">
+                <h3 class="text-xl font-bold text-coffee-700 mb-3">3.3 摄入记录 (Add Record)</h3>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                    <p class="text-sm text-coffee-600 mb-4">快速记录每一次咖啡因摄入，支持饮品库选择、自定义输入，以及补录和修正真实摄入时间。</p>
+                    <div class="wireframe-box rounded-xl p-6 mb-4">
+                        <div class="text-center text-coffee-400 text-sm mb-4">页面结构 Wireframe</div>
+                        <div class="space-y-3 max-w-xs mx-auto">
+                            <div class="bg-white rounded p-2 text-xs text-center">🔍 搜索饮品...</div>
+                            <div class="flex gap-1 flex-wrap">
+                                <span class="tag bg-coffee-600 text-white text-[10px]">常用</span>
+                                <span class="tag bg-coffee-100 text-coffee-700 text-[10px]">咖啡</span>
+                                <span class="tag bg-coffee-100 text-coffee-700 text-[10px]">茶</span>
+                                <span class="tag bg-coffee-100 text-coffee-700 text-[10px]">饮料</span>
+                                <span class="tag bg-coffee-100 text-coffee-700 text-[10px]">能量</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-white rounded p-2 text-center text-xs"><span class="text-lg">☕</span><br>美式<br><strong>150mg</strong></div>
+                                <div class="bg-white rounded p-2 text-center text-xs"><span class="text-lg">🥛</span><br>拿铁<br><strong>80mg</strong></div>
+                                <div class="bg-white rounded p-2 text-center text-xs"><span class="text-lg">☕</span><br>浓缩<br><strong>65mg</strong></div>
+                                <div class="bg-white rounded p-2 text-center text-xs"><span class="text-lg">🧊</span><br>冷萃<br><strong>200mg</strong></div>
+                            </div>
+                            <div class="bg-white rounded p-2 text-xs text-center">时间: 今天 15:30 / 1小时前</div>
+                            <div class="bg-white rounded p-2 text-xs text-center border-dashed border border-coffee-300">+ 自定义记录 / 补录记录</div>
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-coffee-700 text-sm mb-2">功能清单</h4>
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-100 text-coffee-800 text-xs">
+                            <tr><th class="text-left p-2">功能</th><th class="text-left p-2">描述</th><th class="text-center p-2">优先级</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-coffee-100"><td class="p-2">快速记录</td><td class="p-2 text-coffee-600">一键记录常用饮品，从饮品库选择</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">分类浏览</td><td class="p-2 text-coffee-600">按咖啡/茶/饮料/能量/补剂/食品分类浏览</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">搜索</td><td class="p-2 text-coffee-600">实时搜索饮品名称，支持模糊匹配</td><td class="p-2 text-center"><span class="tag bg-amber-100 text-amber-700">P1</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">自定义记录</td><td class="p-2 text-coffee-600">手动输入饮品名称和咖啡因含量</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">补录/编辑时间</td><td class="p-2 text-coffee-600">支持补记、修改真实摄入时间，保证时间线和预算计算准确</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">预算提醒</td><td class="p-2 text-coffee-600">超日上限时弹出确认对话框</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr><td class="p-2">删除记录</td><td class="p-2 text-coffee-600">支持撤销误记，立即回算当前残留和趋势图</td><td class="p-2 text-center"><span class="tag bg-amber-100 text-amber-700">P1</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3.4 Explore -->
+            <div id="explore" class="mb-8">
+                <h3 class="text-xl font-bold text-coffee-700 mb-3">3.4 探索 (Explore)</h3>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                    <p class="text-sm text-coffee-600 mb-4">咖啡因科学知识的百科中心，帮助用户了解背后的科学原理。</p>
+                    <h4 class="font-semibold text-coffee-700 text-sm mb-2">功能模块</h4>
+                    <div class="grid md:grid-cols-2 gap-3 mb-4">
+                        <div class="bg-coffee-50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><span class="text-lg">☕</span><h5 class="font-semibold text-sm text-coffee-700">咖啡因百科</h5></div>
+                            <p class="text-xs text-coffee-600">常见饮品咖啡因含量对比表，豆种咖啡因含量对比，冲泡方式萃取系数</p>
+                        </div>
+                        <div class="bg-coffee-50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><span class="text-lg">🔄</span><h5 class="font-semibold text-sm text-coffee-700">代谢流程</h5></div>
+                            <p class="text-xs text-coffee-600">从摄入到排泄的完整4步流程，三大代谢产物的说明</p>
+                        </div>
+                        <div class="bg-coffee-50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><span class="text-lg">📐</span><h5 class="font-semibold text-sm text-coffee-700">计算公式</h5></div>
+                            <p class="text-xs text-coffee-600">核心药代动力学公式展示，参数速查表，不同代谢类型的数值速查</p>
+                        </div>
+                        <div class="bg-coffee-50 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-2"><span class="text-lg">⚡</span><h5 class="font-semibold text-sm text-coffee-700">影响因素</h5></div>
+                            <p class="text-xs text-coffee-600">8大影响因素的半衰期调整系数，CYP1A2 基因多态性科普</p>
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-coffee-700 text-sm mb-2">饮品数据库 (MVP 覆盖)</h4>
+                    <table class="w-full text-xs">
+                        <thead class="bg-coffee-100 text-coffee-800"><tr><th class="text-left p-2">分类</th><th class="text-left p-2">数量</th><th class="text-left p-2">示例</th></tr></thead>
+                        <tbody>
+                            <tr class="border-b border-coffee-100"><td class="p-2">☕ 咖啡</td><td class="p-2">15 款</td><td class="p-2 text-coffee-600">浓缩/美式/拿铁/冷萃/手冲/法压/摩卡壶/速溶/低因</td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">🫖 茶</td><td class="p-2">4 款</td><td class="p-2 text-coffee-600">红茶/绿茶/抹茶/乌龙茶</td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">🥤 碳酸饮料</td><td class="p-2">2 款</td><td class="p-2 text-coffee-600">可口可乐/百事可乐</td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">⚡ 能量饮料</td><td class="p-2">2 款</td><td class="p-2 text-coffee-600">红牛/Monster</td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">💊 补剂</td><td class="p-2">2 款</td><td class="p-2 text-coffee-600">咖啡因片/运动前补剂</td></tr>
+                            <tr><td class="p-2">🍫 食品</td><td class="p-2">2 款</td><td class="p-2 text-coffee-600">黑巧克力/牛奶巧克力</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3.5 Profile -->
+            <div id="profile" class="mb-8">
+                <h3 class="text-xl font-bold text-coffee-700 mb-3">3.5 个人档案 (Profile)</h3>
+                <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                    <p class="text-sm text-coffee-600 mb-4">用于生成个体化估算结果的参数档案，影响咖啡因代谢速度和预算提醒。</p>
+                    <div class="wireframe-box rounded-xl p-6 mb-4">
+                        <div class="text-center text-coffee-400 text-sm mb-4">页面结构 Wireframe</div>
+                        <div class="space-y-3 max-w-xs mx-auto">
+                            <div class="bg-coffee-700 text-white rounded-lg p-4 text-center">
+                                <p class="text-xs opacity-70">你的代谢类型</p>
+                                <p class="text-lg font-bold">🏃 快速代谢者</p>
+                                <p class="text-xs opacity-70">半衰期: 3小时</p>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs bg-white rounded p-2"><span>🚬 吸烟</span><span class="w-8 h-4 bg-coffee-600 rounded-full relative"><span class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></span></span></div>
+                                <div class="flex justify-between text-xs bg-white rounded p-2"><span>💊 口服避孕药</span><span class="w-8 h-4 bg-coffee-200 rounded-full relative"><span class="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></span></span></div>
+                                <div class="flex justify-between text-xs bg-white rounded p-2"><span>🤰 怀孕</span><span class="w-8 h-4 bg-coffee-200 rounded-full relative"><span class="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></span></span></div>
+                            </div>
+                            <div class="bg-white rounded p-2 text-xs text-center">🧬 CYP1A2 基因型: [ 未知 ▼ ]</div>
+                        </div>
+                    </div>
+                    <h4 class="font-semibold text-coffee-700 text-sm mb-2">功能清单</h4>
+                    <table class="w-full text-sm">
+                        <thead class="bg-coffee-100 text-coffee-800 text-xs">
+                            <tr><th class="text-left p-2">功能</th><th class="text-left p-2">描述</th><th class="text-center p-2">优先级</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-coffee-100"><td class="p-2">代谢类型展示</td><td class="p-2 text-coffee-600">根据半衰期自动分类（超快/快/正常/慢/超慢）</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">快速代谢测试</td><td class="p-2 text-coffee-600">5道选择题快速估算代谢类型，作为默认半衰期的校准入口</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">影响因素开关</td><td class="p-2 text-coffee-600">吸烟/避孕药/怀孕/饮酒 等 8 个布尔开关</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">CYP1A2 基因型</td><td class="p-2 text-coffee-600">选择 AA/AC/CC/未知，用于高级用户的精细化调节</td><td class="p-2 text-center"><span class="tag bg-amber-100 text-amber-700">P1</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">肝功能状态</td><td class="p-2 text-coffee-600">正常/轻度/中度/重度四档</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr class="border-b border-coffee-100"><td class="p-2">年龄设置</td><td class="p-2 text-coffee-600">Slider 调节，>65岁自动应用 1.3x 系数</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                            <tr><td class="p-2">日预算 & 入睡时间</td><td class="p-2 text-coffee-600">默认400mg（孕妇200mg），自定义目标入睡时间</td><td class="p-2 text-center"><span class="tag bg-red-100 text-red-700">P0</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Data Model -->
+        <section id="model" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">4</span>
+                核心数据模型
+            </h2>
+            <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">UserProfile · 用户档案</h4>
+                                                <pre class="bg-coffee-900 text-coffee-100 rounded-lg p-4 text-xs overflow-x-auto"><code>interface UserProfile {
+  dailyBudget: number;       // 日安全上限 (mg), 默认 400
+  targetSleepTime: string;   // 目标入睡时间, 默认 "23:00"
+    metabolismPreset: 'fast' | 'normal' | 'slow' | 'unknown';
+    customHalfLife?: number;   // 可选人工覆盖；如有值则优先使用
+  isSmoker: boolean;         // 是否吸烟
+  usesOralContraceptives: boolean;  // 口服避孕药
+  isPregnant: boolean;       // 是否怀孕
+  liverDisease: 'none' | 'mild' | 'moderate' | 'severe';
+  age: number;               // 年龄
+  drinksAlcohol: boolean;    // 是否饮酒
+    cyp1a2Genotype?: 'AA' | 'AC' | 'CC' | 'unknown';
+}</code></pre>
+                                                <p class="text-xs text-coffee-500 mt-2">说明：计算后的半衰期不直接持久化，统一在运行时由 <code>calcHalfLife(profile)</code> 推导，避免模型出现双重真相。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">IntakeRecord · 摄入记录</h4>
+                        <pre class="bg-coffee-900 text-coffee-100 rounded-lg p-4 text-xs overflow-x-auto"><code>interface IntakeRecord {
+  id: string;                // 唯一标识
+    consumedAt: number;        // 真实摄入时间戳 (ms)
+    loggedAt: number;          // 记录写入时间戳 (ms)
+  drinkName: string;         // 饮品名称
+  caffeineAmount: number;    // 咖啡因含量 (mg)
+  icon: string;              // 表情图标
+  color: string;             // 品牌色
+    sourceDrinkId?: string;    // 若来自饮品库则记录来源
+}</code></pre>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">DrinkItem · 饮品条目</h4>
+                        <pre class="bg-coffee-900 text-coffee-100 rounded-lg p-4 text-xs overflow-x-auto"><code>interface DrinkItem {
+  id: string;                // 唯一标识
+  name: string;              // 饮品名称
+  caffeineMg: number;        // 咖啡因含量 (mg)
+  volumeMl: number;          // 容量 (ml)
+  icon: string;              // 表情图标
+  color: string;             // 品牌色
+  category: 'coffee' | 'tea' | 'soda' | 'energy' | 'supplement' | 'food';
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Formula -->
+        <section id="formula" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">5</span>
+                科学计算公式
+            </h2>
+            <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                <div class="space-y-4">
+                    <div class="bg-coffee-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">公式 1 · 单次摄入后剩余量</h4>
+                        <div class="text-center text-lg font-serif text-coffee-900 py-2">A(N) = X × (1/2)^(N / t₁/₂)</div>
+                        <div class="grid grid-cols-4 gap-2 mt-2 text-xs text-center text-coffee-600">
+                            <span><strong>A(N)</strong><br>N时刻体内量(mg)</span>
+                            <span><strong>X</strong><br>摄入剂量(mg)</span>
+                            <span><strong>N</strong><br>经过时间(h)</span>
+                            <span><strong>t₁/₂</strong><br>消除半衰期(h)</span>
+                        </div>
+                    </div>
+                    <div class="bg-coffee-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">公式 2 · 多次摄入叠加</h4>
+                        <div class="text-center text-lg font-serif text-coffee-900 py-2">A_total(N) = Σ Xᵢ × (1/2)^((N-Tᵢ) / t₁/₂)</div>
+                        <p class="text-xs text-coffee-600 text-center mt-1">Xi = 第i次剂量, Ti = 第i次时间（仅当 N > Ti 时计入）</p>
+                    </div>
+                    <div class="bg-coffee-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">公式 3 · 一室模型 (含吸收相)</h4>
+                        <div class="text-center text-base font-serif text-coffee-900 py-2">C(N) = (F·X·kₐ)/(Vd·(kₐ-kₑ)) × (e^(-kₑ·N) - e^(-kₐ·N))</div>
+                    </div>
+                    <div class="bg-coffee-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">半衰期计算 · 个体化模型</h4>
+                                                <pre class="bg-coffee-900 text-coffee-100 rounded-lg p-4 text-xs overflow-x-auto"><code>function calcHalfLife(profile: UserProfile): number {
+    if (profile.customHalfLife != null) {
+        return round(profile.customHalfLife, 1);
+    }
+
+    // 默认基础半衰期来自用户自评；若提供基因型则优先覆盖
+    let base = { fast: 3, normal: 5, slow: 7, unknown: 5 }[profile.metabolismPreset];
+    if (profile.cyp1a2Genotype && profile.cyp1a2Genotype !== 'unknown') {
+        base = { 'AA': 3, 'AC': 7, 'CC': 10 }[profile.cyp1a2Genotype];
+    }
+  
+  // 影响因素调整
+  if (profile.isSmoker)             base *= 0.6;   // 吸烟加速
+  if (profile.usesOralContraceptives) base *= 2.0;   // 避孕药减慢
+  if (profile.isPregnant)           base *= 3.0;   // 怀孕极慢
+  if (profile.drinksAlcohol)        base *= 1.4;   // 饮酒减慢
+  if (profile.age > 65)             base *= 1.3;   // 高龄减慢
+  
+  // 肝功能调整
+  const liverMul = { none: 1, mild: 2, moderate: 3, severe: 4 };
+  base *= liverMul[profile.liverDisease];
+  
+    return Math.max(1, round(base, 1));
+}</code></pre>
+                                                <p class="text-xs text-coffee-500 mt-2">产品输出应统一表述为“估算值”或“风险提示”，而非确定性的安全结论。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. UI/UX -->
+        <section id="uiux" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">6</span>
+                UI/UX 设计规范
+            </h2>
+            <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-3">色彩系统</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2"><span class="w-6 h-6 rounded bg-[#6F4E37]"></span><span class="text-xs">Primary #6F4E37 · 主色/按钮</span></div>
+                            <div class="flex items-center gap-2"><span class="w-6 h-6 rounded bg-[#D4A574]"></span><span class="text-xs">Secondary #D4A574 · 强调/高亮</span></div>
+                            <div class="flex items-center gap-2"><span class="w-6 h-6 rounded bg-[#FAF6F1]"></span><span class="text-xs">Background #FAF6F1 · 页面底色</span></div>
+                            <div class="flex items-center gap-2"><span class="w-6 h-6 rounded bg-white border"></span><span class="text-xs">Surface #FFFFFF · 卡片</span></div>
+                            <div class="flex items-center gap-2"><span class="w-6 h-6 rounded bg-[#3C2415]"></span><span class="text-xs">Dark #3C2415 · 正文标题</span></div>
+                            <div class="flex items-center gap-2"><span class="w-6 h-6 rounded bg-[#C0392B]"></span><span class="text-xs">Danger #C0392B · 警告/危险</span></div>
+                            <div class="flex items-center gap-2"><span class="w-6 h-6 rounded bg-[#27AE60]"></span><span class="text-xs">Success #27AE60 · 安全状态</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-3">字体系统</h4>
+                        <div class="space-y-2 text-xs">
+                            <p><strong>Display</strong> · Noto Serif SC · 优雅衬线，用于标题</p>
+                            <p><strong>Body</strong> · Noto Sans SC · 清晰无衬线，用于正文</p>
+                            <p><strong>Mono</strong> · JetBrains Mono · 等宽，用于数据</p>
+                        </div>
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-3 mt-4">交互原则</h4>
+                        <div class="space-y-1 text-xs text-coffee-600">
+                            <p>• <strong>3秒原则</strong>：核心信息3秒内可见</p>
+                            <p>• <strong>一屏原则</strong>：仪表盘所有关键数据一屏内</p>
+                            <p>• <strong>即时反馈</strong>：记录后即时更新曲线</p>
+                            <p>• <strong>滑动友好</strong>：所有操作支持拇指单手</p>
+                            <p>• <strong>深色模式</strong>：支持 AMOLED 深色主题</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Tech -->
+        <section id="tech" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">7</span>
+                技术架构
+            </h2>
+            <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-coffee-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">前端</h4>
+                        <ul class="text-xs text-coffee-600 space-y-1">
+                            <li><strong>框架</strong>：Flutter + Dart</li>
+                            <li><strong>状态管理</strong>：MVP 先用 ChangeNotifier / ValueNotifier，后续可升级 Riverpod</li>
+                            <li><strong>图表</strong>：CustomPainter / fl_chart（趋势曲线）</li>
+                            <li><strong>组件风格</strong>：Material 3 基础上做品牌化定制</li>
+                            <li><strong>目标平台</strong>：Android / iOS / Web，多端共用同一套计算逻辑</li>
+                        </ul>
+                    </div>
+                    <div class="bg-coffee-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2">存储（MVP 本地优先）</h4>
+                        <ul class="text-xs text-coffee-600 space-y-1">
+                            <li><strong>设置存储</strong>：SharedPreferences</li>
+                            <li><strong>记录存储</strong>：Hive / SQLite（二选一）</li>
+                            <li><strong>离线可用</strong>：默认支持，本地计算不依赖网络</li>
+                        </ul>
+                        <h4 class="font-semibold text-coffee-700 text-sm mb-2 mt-3">可选后端 (v2)</h4>
+                        <ul class="text-xs text-coffee-600 space-y-1">
+                            <li><strong>认证</strong>：Supabase Auth / Firebase Auth</li>
+                            <li><strong>数据库</strong>：Supabase PostgreSQL / Firestore</li>
+                            <li><strong>同步</strong>：跨设备备份与恢复</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Roadmap -->
+        <section id="roadmap" class="mb-14">
+            <h2 class="text-2xl font-bold text-coffee-800 mb-4 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-coffee-600 text-white flex items-center justify-center text-sm">8</span>
+                开发路线图
+            </h2>
+            <div class="section-card bg-white rounded-xl border border-coffee-200 p-6">
+                <div class="space-y-4">
+                    <div class="flex gap-4">
+                        <div class="w-20 text-right text-xs font-semibold text-coffee-500 pt-1">MVP v0.1</div>
+                        <div class="flex-1 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <h4 class="font-semibold text-sm text-red-800">核心可用版（3周）</h4>
+                            <ul class="text-xs text-red-700 mt-1 space-y-0.5">
+                                <li>• 摄入记录 + 饮品数据库</li>
+                                <li>• 补录 / 编辑真实摄入时间</li>
+                                <li>• 当前残留估算 + 简单趋势图</li>
+                                <li>• 基础档案（预算 / 入睡时间 / 影响因素）</li>
+                                <li>• 仪表盘首页（不含 What-if）</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-20 text-right text-xs font-semibold text-coffee-500 pt-1">v0.2</div>
+                        <div class="flex-1 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            <h4 class="font-semibold text-sm text-amber-800">风险提示增强（+2周）</h4>
+                            <ul class="text-xs text-amber-700 mt-1 space-y-0.5">
+                                <li>• 风险提示卡片</li>
+                                <li>• 24h 完整时间线</li>
+                                <li>• What-if 模拟器</li>
+                                <li>• 数据持久化</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-20 text-right text-xs font-semibold text-coffee-500 pt-1">v0.3</div>
+                        <div class="flex-1 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <h4 class="font-semibold text-sm text-yellow-800">体验优化（+1周）</h4>
+                            <ul class="text-xs text-yellow-700 mt-1 space-y-0.5">
+                                <li>• 深色模式</li>
+                                <li>• 推送通知（睡前提醒）</li>
+                                <li>• 饮品搜索</li>
+                                <li>• 记录撤销与历史修正</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-20 text-right text-xs font-semibold text-coffee-500 pt-1">v0.4</div>
+                        <div class="flex-1 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                            <h4 class="font-semibold text-sm text-emerald-800">深度功能（+2周）</h4>
+                            <ul class="text-xs text-emerald-700 mt-1 space-y-0.5">
+                                <li>• 基因档案（CYP1A2）</li>
+                                <li>• 代谢测试问卷</li>
+                                <li>• 健康洞察报告</li>
+                                <li>• 数据导出</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-20 text-right text-xs font-semibold text-coffee-500 pt-1">v1.0</div>
+                        <div class="flex-1 bg-coffee-50 border border-coffee-200 rounded-lg p-3">
+                            <h4 class="font-semibold text-sm text-coffee-800">正式发布（+2周）</h4>
+                            <ul class="text-xs text-coffee-700 mt-1 space-y-0.5">
+                                <li>• Apple Health / Google Fit 集成</li>
+                                <li>• 云同步与备份</li>
+                                <li>• 扫码识别饮品</li>
+                                <li>• 高级健康洞察</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center py-8 border-t border-coffee-200 text-xs text-coffee-400">
+            <p>HalfCaff 功能设计文档 v1.0 · 2025-05-11</p>
+            <p class="mt-1">基于药代动力学科学 · 用于估算与风险提示，不构成医疗建议</p>
+        </footer>
+    </main>
+
+    <script>
+        // Highlight active section on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const tocLinks = document.querySelectorAll('.toc-link');
+        
+        function onScroll() {
+            let current = '';
+            sections.forEach(sec => {
+                const rect = sec.getBoundingClientRect();
+                if (rect.top <= 100) current = sec.id;
+            });
+            tocLinks.forEach(link => {
+                link.classList.remove('active-section');
+                if (link.getAttribute('href') === '#' + current) link.classList.add('active-section');
+            });
+        }
+        window.addEventListener('scroll', onScroll);
+        onScroll();
+    </script>
+</body>
+</html>
