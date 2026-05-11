@@ -32,8 +32,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('HalfCaff'), findsOneWidget);
-    expect(find.text('Dashboard'), findsWidgets);
-    expect(find.text('Recent Samples'), findsOneWidget);
+    expect(find.text('Home'), findsWidgets);
+    expect(find.text("Today's Intake"), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     journalController.dispose();

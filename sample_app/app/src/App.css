@@ -1,0 +1,40 @@
+/* HalfCaff App Styles */
+
+/* Custom scrollbar hide */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Progress bar styling */
+[data-slot="progress-indicator"] {
+  background-color: #6F4E37 !important;
+  transition: width 0.5s ease;
+}
+
+/* Switch styling */
+[data-state="checked"] [data-slot="switch-thumb"] {
+  background-color: #6F4E37;
+}
+
+/* Slider styling */
+[data-slot="slider-range"] {
+  background-color: #6F4E37 !important;
+}
+[data-slot="slider-thumb"] {
+  border-color: #6F4E37 !important;
+  background-color: #6F4E37 !important;
+}
+
+/* Smooth transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Card hover effects */
+button:active {
+  transform: scale(0.97);
+}
+
+/* Toast styling override */
+[data-sonner-toast] {
+  border-color: #E8DCC8 !important;
+}

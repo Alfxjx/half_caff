@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -9,6 +10,113 @@ import '../../models/intake_record.dart';
 import '../../services/caffeine_calculator.dart';
 import '../../state/caffeine_journal_controller.dart';
 import '../../theme/app_theme.dart';
+
+// ---------------------------------------------------------------------------
+//  Motion helpers
+// ---------------------------------------------------------------------------
+
+class FadeInSlideUp extends StatefulWidget {
+  const FadeInSlideUp({
+    super.key,
+    required this.child,
+    this.delay = Duration.zero,
+    this.duration = const Duration(milliseconds: 520),
+  });
+
+  final Widget child;
+  final Duration delay;
+  final Duration duration;
+
+  @override
+  State<FadeInSlideUp> createState() => _FadeInSlideUpState();
+}
+
+class _FadeInSlideUpState extends State<FadeInSlideUp>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
+    _opacity = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0, 1, curve: Curves.easeOut),
+    );
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    Future<void>.delayed(widget.delay, () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(
+        position: _slide,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+class PressScale extends StatefulWidget {
+  const PressScale({
+    super.key,
+    required this.child,
+    this.scale = 0.97,
+    this.duration = const Duration(milliseconds: 140),
+    this.onTap,
+  });
+
+  final Widget child;
+  final double scale;
+  final Duration duration;
+  final VoidCallback? onTap;
+
+  @override
+  State<PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<PressScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? widget.scale : 1.0,
+        duration: widget.duration,
+        curve: Curves.easeOutCubic,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  HomeScreen shell
+// ---------------------------------------------------------------------------
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -68,15 +176,18 @@ class HomeScreen extends StatelessWidget {
                   _titleForIndex(l10n, journalController.selectedTab),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: context.palette.inkMuted,
-                        letterSpacing: 0.6,
+                        letterSpacing: 0.4,
                       ),
                 ),
               ],
             ),
             actions: [
-              IconButton.filledTonal(
-                onPressed: () => _openSettingsSheet(context, l10n),
-                icon: const Icon(Icons.tune_rounded),
+              PressScale(
+                onTap: () => _openSettingsSheet(context, l10n),
+                child: IconButton.filledTonal(
+                  onPressed: () => _openSettingsSheet(context, l10n),
+                  icon: const Icon(Icons.tune_outlined),
+                ),
               ),
               const SizedBox(width: 12),
             ],
@@ -105,59 +216,31 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          bottomNavigationBar: SafeArea(
-            minimum: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                gradient: LinearGradient(
-                  colors: [
-                    context.palette.paper.withOpacity(0.94),
-                    context.palette.paperAlt.withOpacity(0.82),
-                  ],
-                ),
-                border:
-                    Border.all(color: context.palette.border.withOpacity(0.72)),
-                boxShadow: [
-                  BoxShadow(
-                    color: context.palette.shadow.withOpacity(0.6),
-                    blurRadius: 28,
-                    offset: const Offset(0, 16),
-                  ),
-                ],
+          bottomNavigationBar: _GlassNavBar(
+            selectedIndex: journalController.selectedTab,
+            onDestinationSelected: journalController.selectTab,
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.home_outlined),
+                label: l10n.dashboardTab,
               ),
-              child: NavigationBar(
-                selectedIndex: journalController.selectedTab,
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                onDestinationSelected: journalController.selectTab,
-                destinations: [
-                  NavigationDestination(
-                    icon: const Icon(Icons.home_outlined),
-                    selectedIcon: const Icon(Icons.home_rounded),
-                    label: l10n.dashboardTab,
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.show_chart_rounded),
-                    label: l10n.timelineTab,
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.science_outlined),
-                    selectedIcon: const Icon(Icons.science_rounded),
-                    label: l10n.recordTab,
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.auto_stories_outlined),
-                    selectedIcon: const Icon(Icons.auto_stories_rounded),
-                    label: l10n.exploreTab,
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(Icons.tune_outlined),
-                    selectedIcon: const Icon(Icons.tune_rounded),
-                    label: l10n.profileTab,
-                  ),
-                ],
+              NavigationDestination(
+                icon: const Icon(Icons.show_chart_outlined),
+                label: l10n.timelineTab,
               ),
-            ),
+              NavigationDestination(
+                icon: const Icon(Icons.science_outlined),
+                label: l10n.recordTab,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.auto_stories_outlined),
+                label: l10n.exploreTab,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.tune_outlined),
+                label: l10n.profileTab,
+              ),
+            ],
           ),
         );
       },
@@ -268,6 +351,73 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+//  Glass navigation bar
+// ---------------------------------------------------------------------------
+
+class _GlassNavBar extends StatelessWidget {
+  const _GlassNavBar({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required this.destinations,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+  final List<NavigationDestination> destinations;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return SafeArea(
+      minimum: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  palette.paper.withOpacity(0.82),
+                  palette.paperAlt.withOpacity(0.68),
+                ],
+              ),
+              border: Border.all(
+                color: palette.border.withOpacity(0.55),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: palette.shadow.withOpacity(0.5),
+                  blurRadius: 32,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: NavigationBar(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              selectedIndex: selectedIndex,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+              onDestinationSelected: onDestinationSelected,
+              destinations: destinations,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Dashboard
+// ---------------------------------------------------------------------------
+
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key, required this.controller});
 
@@ -287,207 +437,247 @@ class DashboardPage extends StatelessWidget {
     final recentRecords = controller.records.take(5).toList(growable: false);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageIntro(
-            title: l10n.dashboardHeadline,
-            subtitle: l10n.dashboardSubtitle,
-          ),
-          const SizedBox(height: 16),
-          LabCard(
-            sampleNumber: '001',
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.labEstimate,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge
-                                ?.copyWith(
-                                  color: palette.inkMuted,
-                                  letterSpacing: 0.8,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${insights.currentAmountMg.toStringAsFixed(0)} mg',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: palette.ink,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _riskTint(insights.risk, palette),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              _riskMessage(
-                                  context, insights.risk, insights.lowRiskTime),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: palette.ink,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 132,
-                      height: 132,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox.expand(
-                            child: CircularProgressIndicator(
-                              value: progress,
-                              strokeWidth: 12,
-                              backgroundColor:
-                                  palette.paperAlt.withOpacity(0.55),
-                              color: palette.coffee,
-                            ),
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                insights.currentAmountMg.toStringAsFixed(0),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
-                              Text(
-                                'mg',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: palette.inkMuted,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    MetricNote(
-                      label: l10n.dailyBudgetUsedLabel,
-                      value: '${insights.dailyTotalMg} mg',
-                    ),
-                    MetricNote(
-                      label: l10n.halfLifeLabel,
-                      value: '${insights.halfLifeHours.toStringAsFixed(1)} h',
-                    ),
-                    MetricNote(
-                      label: l10n.budgetRemainingLabel,
-                      value: '${insights.budgetRemainingMg} mg',
-                    ),
-                    MetricNote(
-                      label: l10n.projectedAtSleepLabel,
-                      value:
-                          '${insights.projectedAtSleepMg.toStringAsFixed(0)} mg',
-                    ),
-                  ],
-                ),
-              ],
+          FadeInSlideUp(
+            child: PageIntro(
+              title: l10n.dashboardHeadline,
+              subtitle: l10n.dashboardSubtitle,
             ),
           ),
-          const SizedBox(height: 16),
-          SectionLabel(text: l10n.recentSamplesLabel),
-          const SizedBox(height: 10),
-          if (recentRecords.isEmpty)
-            LabCard(
-              sampleNumber: '002',
-              child: EmptyState(
-                title: l10n.noRecordsTitle,
-                body: l10n.noRecordsBody,
-              ),
-            )
-          else
-            Column(
-              children: recentRecords
-                  .map(
-                    (record) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: LabCard(
-                        sampleNumber:
-                            _sampleNumberForRecord(record, recentRecords),
-                        compact: true,
-                        child: Row(
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 80),
+            child: LabCard(
+              sampleNumber: '001',
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(record.emoji,
-                                style: const TextStyle(fontSize: 28)),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    displayNameForRecord(l10n, record),
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    formatRelativeRecordTime(
-                                        context, record.consumedAt),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          color: palette.inkMuted,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
                             Text(
-                              '+${record.caffeineAmountMg}mg',
+                              l10n.labEstimate,
                               style: Theme.of(context)
                                   .textTheme
-                                  .titleSmall
+                                  .labelLarge
                                   ?.copyWith(
-                                    color: palette.coffee,
-                                    fontWeight: FontWeight.w800,
+                                    color: palette.inkMuted,
+                                    letterSpacing: 0.6,
                                   ),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              '${insights.currentAmountMg.toStringAsFixed(0)} mg',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: palette.ink,
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures(),
+                                    ],
+                                  ),
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _riskTint(insights.risk, palette),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: _riskBorder(insights.risk, palette),
+                                ),
+                              ),
+                              child: Text(
+                                _riskMessage(
+                                    context, insights.risk, insights.lowRiskTime),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: palette.ink,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox.expand(
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                strokeWidth: 10,
+                                strokeCap: StrokeCap.round,
+                                backgroundColor:
+                                    palette.paperAlt.withOpacity(0.55),
+                                color: palette.coffee,
+                              ),
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  insights.currentAmountMg.toStringAsFixed(0),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        fontFeatures: const [
+                                          FontFeature.tabularFigures(),
+                                        ],
+                                      ),
+                                ),
+                                Text(
+                                  'mg',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: palette.inkMuted,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossCount =
+                          constraints.maxWidth > 420 ? 4 : 2;
+                      return GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: crossCount,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 1.7,
+                        children: [
+                          MetricNote(
+                            label: l10n.dailyBudgetUsedLabel,
+                            value: '${insights.dailyTotalMg} mg',
+                          ),
+                          MetricNote(
+                            label: l10n.halfLifeLabel,
+                            value:
+                                '${insights.halfLifeHours.toStringAsFixed(1)} h',
+                          ),
+                          MetricNote(
+                            label: l10n.budgetRemainingLabel,
+                            value: '${insights.budgetRemainingMg} mg',
+                          ),
+                          MetricNote(
+                            label: l10n.projectedAtSleepLabel,
+                            value:
+                                '${insights.projectedAtSleepMg.toStringAsFixed(0)} mg',
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 160),
+            child: SectionLabel(text: l10n.recentSamplesLabel),
+          ),
+          const SizedBox(height: 16),
+          if (recentRecords.isEmpty)
+            FadeInSlideUp(
+              delay: const Duration(milliseconds: 220),
+              child: LabCard(
+                sampleNumber: '002',
+                child: EmptyState(
+                  title: l10n.noRecordsTitle,
+                  body: l10n.noRecordsBody,
+                ),
+              ),
+            )
+          else
+            Column(
+              children: recentRecords.asMap().entries.map((entry) {
+                final index = entry.key;
+                final record = entry.value;
+                return FadeInSlideUp(
+                  delay: Duration(milliseconds: 220 + index * 60),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: LabCard(
+                      sampleNumber:
+                          _sampleNumberForRecord(record, recentRecords),
+                      compact: true,
+                      child: Row(
+                        children: [
+                          Text(record.emoji,
+                              style: const TextStyle(fontSize: 28)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  displayNameForRecord(l10n, record),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  formatRelativeRecordTime(
+                                      context, record.consumedAt),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: palette.inkMuted,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            '+${record.caffeineAmountMg}mg',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color: palette.coffee,
+                                  fontWeight: FontWeight.w800,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
-                  )
-                  .toList(growable: false),
+                  ),
+                );
+              }).toList(growable: false),
             ),
         ],
       ),
@@ -497,11 +687,22 @@ class DashboardPage extends StatelessWidget {
   Color _riskTint(CaffeineRisk risk, LabPalette palette) {
     switch (risk) {
       case CaffeineRisk.low:
-        return palette.success.withOpacity(0.22);
+        return palette.success.withOpacity(0.18);
       case CaffeineRisk.medium:
-        return palette.warning.withOpacity(0.22);
+        return palette.warning.withOpacity(0.18);
       case CaffeineRisk.high:
-        return Colors.redAccent.withOpacity(0.16);
+        return const Color(0xFFC75B5B).withOpacity(0.12);
+    }
+  }
+
+  Color _riskBorder(CaffeineRisk risk, LabPalette palette) {
+    switch (risk) {
+      case CaffeineRisk.low:
+        return palette.success.withOpacity(0.35);
+      case CaffeineRisk.medium:
+        return palette.warning.withOpacity(0.35);
+      case CaffeineRisk.high:
+        return const Color(0xFFC75B5B).withOpacity(0.3);
     }
   }
 
@@ -533,6 +734,10 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+//  Timeline
+// ---------------------------------------------------------------------------
+
 class TimelinePage extends StatelessWidget {
   const TimelinePage({super.key, required this.controller});
 
@@ -560,89 +765,109 @@ class TimelinePage extends StatelessWidget {
     });
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageIntro(
-            title: l10n.timelineHeadline,
-            subtitle: l10n.timelineSubtitle,
+          FadeInSlideUp(
+            child: PageIntro(
+              title: l10n.timelineHeadline,
+              subtitle: l10n.timelineSubtitle,
+            ),
           ),
-          const SizedBox(height: 16),
-          LabCard(
-            sampleNumber: '101',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 240,
-                  child: CustomPaint(
-                    painter: TimelineChartPainter(
-                      points: points,
-                      now: now,
-                      palette: context.palette,
-                    ),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('-8h', style: Theme.of(context).textTheme.bodySmall),
-                    Text('now', style: Theme.of(context).textTheme.bodySmall),
-                    Text('+16h', style: Theme.of(context).textTheme.bodySmall),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  '${l10n.previewDoseLabel}: ${controller.whatIfDoseMg}${l10n.previewDoseUnit}',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                Slider(
-                  min: 0,
-                  max: 300,
-                  divisions: 12,
-                  value: controller.whatIfDoseMg.toDouble(),
-                  onChanged: (value) => controller.setWhatIfDose(value.round()),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    MetricNote(
-                      label: l10n.peakLevelLabel,
-                      value: '${peak.toStringAsFixed(0)} mg',
-                    ),
-                    MetricNote(
-                      label: l10n.lowRiskWindowLabel,
-                      value: insights.lowRiskTime == null
-                          ? l10n.timeUnknown
-                          : formatClockTime(context, insights.lowRiskTime!),
-                    ),
-                    MetricNote(
-                      label: l10n.fullyClearedLabel,
-                      value: insights.fullyClearedTime == null
-                          ? l10n.timeUnknown
-                          : formatClockTime(
-                              context, insights.fullyClearedTime!),
-                    ),
-                    MetricNote(
-                      label: l10n.projectedAtSleepLabel,
-                      value:
-                          '${insights.projectedAtSleepMg.toStringAsFixed(0)} mg',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  l10n.timelineNotice,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.palette.inkMuted,
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 80),
+            child: LabCard(
+              sampleNumber: '101',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 240,
+                    child: CustomPaint(
+                      painter: TimelineChartPainter(
+                        points: points,
+                        now: now,
+                        palette: context.palette,
                       ),
-                ),
-              ],
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('-8h',
+                          style: Theme.of(context).textTheme.bodySmall),
+                      Text('now',
+                          style: Theme.of(context).textTheme.bodySmall),
+                      Text('+16h',
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '${l10n.previewDoseLabel}: ${controller.whatIfDoseMg}${l10n.previewDoseUnit}',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  Slider(
+                    min: 0,
+                    max: 300,
+                    divisions: 12,
+                    value: controller.whatIfDoseMg.toDouble(),
+                    onChanged: (value) =>
+                        controller.setWhatIfDose(value.round()),
+                  ),
+                  const SizedBox(height: 8),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossCount =
+                          constraints.maxWidth > 420 ? 4 : 2;
+                      return GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: crossCount,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 1.7,
+                        children: [
+                          MetricNote(
+                            label: l10n.peakLevelLabel,
+                            value: '${peak.toStringAsFixed(0)} mg',
+                          ),
+                          MetricNote(
+                            label: l10n.lowRiskWindowLabel,
+                            value: insights.lowRiskTime == null
+                                ? l10n.timeUnknown
+                                : formatClockTime(
+                                    context, insights.lowRiskTime!),
+                          ),
+                          MetricNote(
+                            label: l10n.fullyClearedLabel,
+                            value: insights.fullyClearedTime == null
+                                ? l10n.timeUnknown
+                                : formatClockTime(
+                                    context, insights.fullyClearedTime!),
+                          ),
+                          MetricNote(
+                            label: l10n.projectedAtSleepLabel,
+                            value:
+                                '${insights.projectedAtSleepMg.toStringAsFixed(0)} mg',
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    l10n.timelineNotice,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: context.palette.inkMuted,
+                        ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -651,11 +876,11 @@ class TimelinePage extends StatelessWidget {
   }
 }
 
-enum RecordHistoryFilter {
-  all,
-  today,
-  week,
-}
+// ---------------------------------------------------------------------------
+//  Record
+// ---------------------------------------------------------------------------
+
+enum RecordHistoryFilter { all, today, week }
 
 class RecordPage extends StatefulWidget {
   const RecordPage({super.key, required this.controller});
@@ -675,182 +900,231 @@ class _RecordPageState extends State<RecordPage> {
     final records = _filteredRecords(widget.controller.records);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageIntro(
-            title: l10n.recordHeadline,
-            subtitle: l10n.recordSubtitle,
+          FadeInSlideUp(
+            child: PageIntro(
+              title: l10n.recordHeadline,
+              subtitle: l10n.recordSubtitle,
+            ),
           ),
-          const SizedBox(height: 16),
-          LabCard(
-            sampleNumber: '201',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.quickAddLabel,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 14),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.18,
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 80),
+            child: LabCard(
+              sampleNumber: '201',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.quickAddLabel,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  itemCount: widget.controller.availableDrinks.length,
-                  itemBuilder: (context, index) {
-                    final drink = widget.controller.availableDrinks[index];
-                    return InkWell(
-                      onTap: () =>
-                          widget.controller.addDrink(drink, DateTime.now()),
-                      borderRadius: BorderRadius.circular(18),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          color: context.palette.paperAlt.withOpacity(0.35),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: context.palette.border),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(drink.emoji,
-                                  style: const TextStyle(fontSize: 26)),
-                              const Spacer(),
-                              Text(
-                                localizedDrinkName(l10n, drink.id),
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${drink.caffeineMg} mg · ${drink.volumeMl} ml',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                      color: context.palette.inkMuted,
+                  const SizedBox(height: 14),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio:
+                          MediaQuery.of(context).size.width > 380
+                              ? 1.35
+                              : 1.15,
+                    ),
+                    itemCount: widget.controller.availableDrinks.length,
+                    itemBuilder: (context, index) {
+                      final drink = widget.controller.availableDrinks[index];
+                      return PressScale(
+                        onTap: () => widget.controller.addDrink(
+                            drink, DateTime.now()),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: context.palette.paperAlt.withOpacity(0.35),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: context.palette.border.withOpacity(0.7)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: context.palette.paper
+                                        .withOpacity(0.6),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: context.palette.border
+                                          .withOpacity(0.5),
                                     ),
-                              ),
-                            ],
+                                  ),
+                                  child: Text(
+                                    drink.emoji,
+                                    style: const TextStyle(fontSize: 22),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  localizedDrinkName(l10n, drink.id),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${drink.caffeineMg} mg · ${drink.volumeMl} ml',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: context.palette.inkMuted,
+                                        fontFeatures: const [
+                                          FontFeature.tabularFigures(),
+                                        ],
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.tonalIcon(
+                    onPressed: () =>
+                        showRecordSheet(context, widget.controller),
+                    icon: const Icon(Icons.edit_note_outlined),
+                    label: Text(l10n.customRecordButton),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 140),
+            child: LabCard(
+              sampleNumber: '202',
+              compact: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.recordFilterLabel,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ChoiceChip(
+                        label: Text(l10n.recordFilterAll),
+                        selected: _historyFilter == RecordHistoryFilter.all,
+                        onSelected: (_) {
+                          setState(() {
+                            _historyFilter = RecordHistoryFilter.all;
+                          });
+                        },
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                FilledButton.tonalIcon(
-                  onPressed: () => showRecordSheet(context, widget.controller),
-                  icon: const Icon(Icons.edit_note_rounded),
-                  label: Text(l10n.customRecordButton),
-                ),
-              ],
+                      ChoiceChip(
+                        label: Text(l10n.recordFilterToday),
+                        selected: _historyFilter == RecordHistoryFilter.today,
+                        onSelected: (_) {
+                          setState(() {
+                            _historyFilter = RecordHistoryFilter.today;
+                          });
+                        },
+                      ),
+                      ChoiceChip(
+                        label: Text(l10n.recordFilterWeek),
+                        selected: _historyFilter == RecordHistoryFilter.week,
+                        onSelected: (_) {
+                          setState(() {
+                            _historyFilter = RecordHistoryFilter.week;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          LabCard(
-            sampleNumber: '202',
-            compact: true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.recordFilterLabel,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    ChoiceChip(
-                      label: Text(l10n.recordFilterAll),
-                      selected: _historyFilter == RecordHistoryFilter.all,
-                      onSelected: (_) {
-                        setState(() {
-                          _historyFilter = RecordHistoryFilter.all;
-                        });
-                      },
-                    ),
-                    ChoiceChip(
-                      label: Text(l10n.recordFilterToday),
-                      selected: _historyFilter == RecordHistoryFilter.today,
-                      onSelected: (_) {
-                        setState(() {
-                          _historyFilter = RecordHistoryFilter.today;
-                        });
-                      },
-                    ),
-                    ChoiceChip(
-                      label: Text(l10n.recordFilterWeek),
-                      selected: _historyFilter == RecordHistoryFilter.week,
-                      onSelected: (_) {
-                        setState(() {
-                          _historyFilter = RecordHistoryFilter.week;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 200),
+            child: SectionLabel(text: l10n.recordHistoryLabel),
           ),
-          const SizedBox(height: 16),
-          SectionLabel(text: l10n.recordHistoryLabel),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           if (records.isEmpty)
-            LabCard(
-              sampleNumber: '203',
-              child: EmptyState(
-                title: l10n.noRecordsTitle,
-                body: l10n.noRecordsBody,
+            FadeInSlideUp(
+              delay: const Duration(milliseconds: 260),
+              child: LabCard(
+                sampleNumber: '203',
+                child: EmptyState(
+                  title: l10n.noRecordsTitle,
+                  body: l10n.noRecordsBody,
+                ),
               ),
             )
           else
             Column(
-              children: records
-                  .map(
-                    (record) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: LabCard(
-                        sampleNumber:
-                            'R-${record.id.substring(record.id.length - 3)}',
-                        compact: true,
-                        child: Row(
-                          children: [
-                            Text(record.emoji,
-                                style: const TextStyle(fontSize: 26)),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    displayNameForRecord(l10n, record),
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${formatDateTime(context, record.consumedAt)} · ${record.caffeineAmountMg}mg',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          color: context.palette.inkMuted,
-                                        ),
-                                  ),
-                                ],
-                              ),
+              children: records.asMap().entries.map((entry) {
+                final index = entry.key;
+                final record = entry.value;
+                return FadeInSlideUp(
+                  delay: Duration(milliseconds: 260 + index * 50),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: LabCard(
+                      sampleNumber:
+                          'R-${record.id.substring(record.id.length - 3)}',
+                      compact: true,
+                      child: Row(
+                        children: [
+                          Text(record.emoji,
+                              style: const TextStyle(fontSize: 26)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  displayNameForRecord(l10n, record),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${formatDateTime(context, record.consumedAt)} · ${record.caffeineAmountMg}mg',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: context.palette.inkMuted,
+                                      ),
+                                ),
+                              ],
                             ),
-                            IconButton(
+                          ),
+                          PressScale(
+                            onTap: () => showRecordSheet(
+                              context,
+                              widget.controller,
+                              existingRecord: record,
+                            ),
+                            child: IconButton(
                               tooltip: l10n.editRecordTooltip,
                               onPressed: () => showRecordSheet(
                                 context,
@@ -859,18 +1133,23 @@ class _RecordPageState extends State<RecordPage> {
                               ),
                               icon: const Icon(Icons.edit_outlined),
                             ),
-                            IconButton(
+                          ),
+                          PressScale(
+                            onTap: () => confirmDeleteRecord(context, record),
+                            child: IconButton(
                               tooltip: l10n.deleteRecordTooltip,
                               onPressed: () =>
                                   confirmDeleteRecord(context, record),
-                              icon: const Icon(Icons.delete_outline_rounded),
+                              icon:
+                                  const Icon(Icons.delete_outline),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  )
-                  .toList(growable: false),
+                  ),
+                );
+              }).toList(growable: false),
             ),
         ],
       ),
@@ -988,7 +1267,7 @@ class _RecordPageState extends State<RecordPage> {
                     const SizedBox(height: 12),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.schedule_rounded),
+                      leading: const Icon(Icons.schedule_outlined),
                       title: Text(l10n.consumedAtLabel),
                       subtitle: Text(formatDateTime(context, consumedAt)),
                       onTap: () async {
@@ -1054,8 +1333,7 @@ class _RecordPageState extends State<RecordPage> {
                                           existingRecord.sourceDrinkId!,
                                         );
                               final shouldClearCustomName =
-                                  canonicalName != null &&
-                                      name == canonicalName;
+                                  canonicalName != null && name == canonicalName;
 
                               await controller.updateRecord(
                                 existingRecord.copyWith(
@@ -1091,6 +1369,10 @@ class _RecordPageState extends State<RecordPage> {
   }
 }
 
+// ---------------------------------------------------------------------------
+//  Explore
+// ---------------------------------------------------------------------------
+
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key, required this.controller});
 
@@ -1101,108 +1383,115 @@ class ExplorePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageIntro(
-            title: l10n.exploreHeadline,
-            subtitle: l10n.exploreSubtitle,
+          FadeInSlideUp(
+            child: PageIntro(
+              title: l10n.exploreHeadline,
+              subtitle: l10n.exploreSubtitle,
+            ),
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              SizedBox(
-                width: 340,
-                child: LabCard(
-                  sampleNumber: '301',
-                  child: ExplorePanel(
-                    emoji: '☕',
-                    title: l10n.encyclopediaCardTitle,
-                    body: l10n.encyclopediaCardBody,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 340,
-                child: LabCard(
-                  sampleNumber: '302',
-                  child: ExplorePanel(
-                    emoji: '⚗️',
-                    title: l10n.metabolismCardTitle,
-                    body: l10n.metabolismCardBody,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 340,
-                child: LabCard(
-                  sampleNumber: '303',
-                  child: ExplorePanel(
-                    emoji: '∑',
-                    title: l10n.formulaCardTitle,
-                    body: l10n.formulaCardBody,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 340,
-                child: LabCard(
-                  sampleNumber: '304',
-                  child: ExplorePanel(
-                    emoji: '🧬',
-                    title: l10n.factorsCardTitle,
-                    body: l10n.factorsCardBody,
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 80),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth > 500;
+                final cardWidth =
+                    isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth;
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: cardWidth,
+                      child: _ExploreCard(
+                        sampleNumber: '301',
+                        emoji: '☕',
+                        title: l10n.encyclopediaCardTitle,
+                        body: l10n.encyclopediaCardBody,
+                      ),
+                    ),
+                    SizedBox(
+                      width: cardWidth,
+                      child: _ExploreCard(
+                        sampleNumber: '302',
+                        emoji: '⚗️',
+                        title: l10n.metabolismCardTitle,
+                        body: l10n.metabolismCardBody,
+                      ),
+                    ),
+                    SizedBox(
+                      width: cardWidth,
+                      child: _ExploreCard(
+                        sampleNumber: '303',
+                        emoji: '∑',
+                        title: l10n.formulaCardTitle,
+                        body: l10n.formulaCardBody,
+                      ),
+                    ),
+                    SizedBox(
+                      width: cardWidth,
+                      child: _ExploreCard(
+                        sampleNumber: '304',
+                        emoji: '🧬',
+                        title: l10n.factorsCardTitle,
+                        body: l10n.factorsCardBody,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
-          const SizedBox(height: 16),
-          LabCard(
-            sampleNumber: '305',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.referenceTableTitle,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 14),
-                _ReferenceRow(
-                  label: l10n.coffeeCategory,
-                  count: '15',
-                  examples: 'Espresso · Americano · Latte · Cold Brew',
-                ),
-                _ReferenceRow(
-                  label: l10n.teaCategory,
-                  count: '4',
-                  examples: 'Black Tea · Green Tea · Matcha · Oolong',
-                ),
-                _ReferenceRow(
-                  label: l10n.sodaCategory,
-                  count: '2',
-                  examples: 'Cola · Diet Cola',
-                ),
-                _ReferenceRow(
-                  label: l10n.energyCategory,
-                  count: '2',
-                  examples: 'Red Bull · Monster',
-                ),
-                _ReferenceRow(
-                  label: l10n.supplementCategory,
-                  count: '2',
-                  examples: 'Caffeine Pill · Pre-workout',
-                ),
-                _ReferenceRow(
-                  label: l10n.foodCategory,
-                  count: '2',
-                  examples: 'Dark Chocolate · Milk Chocolate',
-                  isLast: true,
-                ),
-              ],
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 160),
+            child: LabCard(
+              sampleNumber: '305',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.referenceTableTitle,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 14),
+                  _ReferenceRow(
+                    label: l10n.coffeeCategory,
+                    count: '15',
+                    examples: 'Espresso · Americano · Latte · Cold Brew',
+                  ),
+                  _ReferenceRow(
+                    label: l10n.teaCategory,
+                    count: '4',
+                    examples: 'Black Tea · Green Tea · Matcha · Oolong',
+                  ),
+                  _ReferenceRow(
+                    label: l10n.sodaCategory,
+                    count: '2',
+                    examples: 'Cola · Diet Cola',
+                  ),
+                  _ReferenceRow(
+                    label: l10n.energyCategory,
+                    count: '2',
+                    examples: 'Red Bull · Monster',
+                  ),
+                  _ReferenceRow(
+                    label: l10n.supplementCategory,
+                    count: '2',
+                    examples: 'Caffeine Pill · Pre-workout',
+                  ),
+                  _ReferenceRow(
+                    label: l10n.foodCategory,
+                    count: '2',
+                    examples: 'Dark Chocolate · Milk Chocolate',
+                    isLast: true,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -1210,6 +1499,80 @@ class ExplorePage extends StatelessWidget {
     );
   }
 }
+
+class _ExploreCard extends StatelessWidget {
+  const _ExploreCard({
+    required this.sampleNumber,
+    required this.emoji,
+    required this.title,
+    required this.body,
+  });
+
+  final String sampleNumber;
+  final String emoji;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressScale(
+      child: LabCard(
+        sampleNumber: sampleNumber,
+        compact: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: context.palette.paperAlt.withOpacity(0.45),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: context.palette.border.withOpacity(0.5),
+                    ),
+                  ),
+                  child: Text(emoji,
+                      style: const TextStyle(fontSize: 24)),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.arrow_forward,
+                  size: 18,
+                  color: context.palette.inkMuted,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              body,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: context.palette.inkMuted,
+                    height: 1.5,
+                  ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Profile
+// ---------------------------------------------------------------------------
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key, required this.controller});
@@ -1223,196 +1586,213 @@ class ProfilePage extends StatelessWidget {
     final halfLife = CaffeineCalculator.calculateHalfLife(profile);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageIntro(
-            title: l10n.profileHeadline,
-            subtitle: l10n.profileSubtitle,
+          FadeInSlideUp(
+            child: PageIntro(
+              title: l10n.profileHeadline,
+              subtitle: l10n.profileSubtitle,
+            ),
           ),
-          const SizedBox(height: 16),
-          LabCard(
-            sampleNumber: '401',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: context.palette.coffee.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: context.palette.border),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.halfLifeLabel,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              color: context.palette.inkMuted,
-                            ),
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 80),
+            child: LabCard(
+              sampleNumber: '401',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: context.palette.coffee.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: context.palette.border.withOpacity(0.6),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${halfLife.toStringAsFixed(1)} h',
-                        style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.halfLifeLabel,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(
+                                color: context.palette.inkMuted,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${halfLife.toStringAsFixed(1)} h',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(l10n.metabolismPresetLabel),
+                  const SizedBox(height: 8),
+                  SegmentedButton<MetabolismPreset>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: MetabolismPreset.fast,
+                        label: Text(l10n.presetFast),
+                      ),
+                      ButtonSegment(
+                        value: MetabolismPreset.normal,
+                        label: Text(l10n.presetNormal),
+                      ),
+                      ButtonSegment(
+                        value: MetabolismPreset.slow,
+                        label: Text(l10n.presetSlow),
+                      ),
+                      ButtonSegment(
+                        value: MetabolismPreset.unknown,
+                        label: Text(l10n.presetUnknown),
                       ),
                     ],
+                    selected: {profile.metabolismPreset},
+                    onSelectionChanged: (selection) {
+                      controller.updateProfile(
+                        profile.copyWith(metabolismPreset: selection.first),
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(height: 18),
-                Text(l10n.metabolismPresetLabel),
-                const SizedBox(height: 8),
-                SegmentedButton<MetabolismPreset>(
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment(
-                      value: MetabolismPreset.fast,
-                      label: Text(l10n.presetFast),
+                  const SizedBox(height: 24),
+                  _ProfileSwitch(
+                    title: l10n.smokerLabel,
+                    value: profile.isSmoker,
+                    onChanged: (value) => controller.updateProfile(
+                      profile.copyWith(isSmoker: value),
                     ),
-                    ButtonSegment(
-                      value: MetabolismPreset.normal,
-                      label: Text(l10n.presetNormal),
+                  ),
+                  _ProfileSwitch(
+                    title: l10n.oralContraceptivesLabel,
+                    value: profile.usesOralContraceptives,
+                    onChanged: (value) => controller.updateProfile(
+                      profile.copyWith(usesOralContraceptives: value),
                     ),
-                    ButtonSegment(
-                      value: MetabolismPreset.slow,
-                      label: Text(l10n.presetSlow),
+                  ),
+                  _ProfileSwitch(
+                    title: l10n.pregnantLabel,
+                    value: profile.isPregnant,
+                    onChanged: (value) => controller.updateProfile(
+                      profile.copyWith(isPregnant: value),
                     ),
-                    ButtonSegment(
-                      value: MetabolismPreset.unknown,
-                      label: Text(l10n.presetUnknown),
+                  ),
+                  _ProfileSwitch(
+                    title: l10n.drinksAlcoholLabel,
+                    value: profile.drinksAlcohol,
+                    onChanged: (value) => controller.updateProfile(
+                      profile.copyWith(drinksAlcohol: value),
                     ),
-                  ],
-                  selected: {profile.metabolismPreset},
-                  onSelectionChanged: (selection) {
-                    controller.updateProfile(
-                      profile.copyWith(metabolismPreset: selection.first),
-                    );
-                  },
-                ),
-                const SizedBox(height: 18),
-                SwitchListTile.adaptive(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.smokerLabel),
-                  value: profile.isSmoker,
-                  onChanged: (value) => controller.updateProfile(
-                    profile.copyWith(isSmoker: value),
                   ),
-                ),
-                SwitchListTile.adaptive(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.oralContraceptivesLabel),
-                  value: profile.usesOralContraceptives,
-                  onChanged: (value) => controller.updateProfile(
-                    profile.copyWith(usesOralContraceptives: value),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<LiverStatus>(
+                    value: profile.liverStatus,
+                    decoration: InputDecoration(
+                      labelText: l10n.liverStatusLabel,
+                    ),
+                    items: LiverStatus.values
+                        .map(
+                          (status) => DropdownMenuItem(
+                            value: status,
+                            child: Text(localizedLiverStatus(l10n, status)),
+                          ),
+                        )
+                        .toList(growable: false),
+                    onChanged: (value) {
+                      if (value != null) {
+                        controller
+                            .updateProfile(profile.copyWith(liverStatus: value));
+                      }
+                    },
                   ),
-                ),
-                SwitchListTile.adaptive(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.pregnantLabel),
-                  value: profile.isPregnant,
-                  onChanged: (value) => controller.updateProfile(
-                    profile.copyWith(isPregnant: value),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<Cyp1a2Genotype>(
+                    value: profile.genotype,
+                    decoration: InputDecoration(
+                      labelText: l10n.genotypeLabel,
+                    ),
+                    items: Cyp1a2Genotype.values
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(localizedGenotype(l10n, value)),
+                          ),
+                        )
+                        .toList(growable: false),
+                    onChanged: (value) {
+                      if (value != null) {
+                        controller
+                            .updateProfile(profile.copyWith(genotype: value));
+                      }
+                    },
                   ),
-                ),
-                SwitchListTile.adaptive(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.drinksAlcoholLabel),
-                  value: profile.drinksAlcohol,
-                  onChanged: (value) => controller.updateProfile(
-                    profile.copyWith(drinksAlcohol: value),
+                  const SizedBox(height: 24),
+                  Text('${l10n.ageLabel}: ${profile.age}'),
+                  Slider(
+                    min: 18,
+                    max: 80,
+                    divisions: 62,
+                    value: profile.age.toDouble(),
+                    onChanged: (value) => controller.updateProfile(
+                      profile.copyWith(age: value.round()),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<LiverStatus>(
-                  value: profile.liverStatus,
-                  decoration: InputDecoration(labelText: l10n.liverStatusLabel),
-                  items: LiverStatus.values
-                      .map(
-                        (status) => DropdownMenuItem(
-                          value: status,
-                          child: Text(localizedLiverStatus(l10n, status)),
+                  const SizedBox(height: 8),
+                  Text('${l10n.dailyBudgetLabel}: ${profile.dailyBudgetMg}mg'),
+                  Slider(
+                    min: 100,
+                    max: 500,
+                    divisions: 8,
+                    value: profile.dailyBudgetMg.toDouble(),
+                    onChanged: (value) => controller.updateProfile(
+                      profile.copyWith(dailyBudgetMg: value.round()),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.bedtime_outlined),
+                    title: Text(l10n.sleepTargetLabel),
+                    subtitle: Text(
+                      formatMinutesAsTime(context, profile.targetSleepMinutes),
+                    ),
+                    onTap: () async {
+                      final selected = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay(
+                          hour: profile.targetSleepMinutes ~/ 60,
+                          minute: profile.targetSleepMinutes % 60,
                         ),
-                      )
-                      .toList(growable: false),
-                  onChanged: (value) {
-                    if (value != null) {
-                      controller
-                          .updateProfile(profile.copyWith(liverStatus: value));
-                    }
-                  },
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<Cyp1a2Genotype>(
-                  value: profile.genotype,
-                  decoration: InputDecoration(labelText: l10n.genotypeLabel),
-                  items: Cyp1a2Genotype.values
-                      .map(
-                        (value) => DropdownMenuItem(
-                          value: value,
-                          child: Text(localizedGenotype(l10n, value)),
+                      );
+                      if (selected == null) {
+                        return;
+                      }
+                      controller.updateProfile(
+                        profile.copyWith(
+                          targetSleepMinutes:
+                              selected.hour * 60 + selected.minute,
                         ),
-                      )
-                      .toList(growable: false),
-                  onChanged: (value) {
-                    if (value != null) {
-                      controller
-                          .updateProfile(profile.copyWith(genotype: value));
-                    }
-                  },
-                ),
-                const SizedBox(height: 18),
-                Text('${l10n.ageLabel}: ${profile.age}'),
-                Slider(
-                  min: 18,
-                  max: 80,
-                  divisions: 62,
-                  value: profile.age.toDouble(),
-                  onChanged: (value) => controller.updateProfile(
-                    profile.copyWith(age: value.round()),
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text('${l10n.dailyBudgetLabel}: ${profile.dailyBudgetMg}mg'),
-                Slider(
-                  min: 100,
-                  max: 500,
-                  divisions: 8,
-                  value: profile.dailyBudgetMg.toDouble(),
-                  onChanged: (value) => controller.updateProfile(
-                    profile.copyWith(dailyBudgetMg: value.round()),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.bedtime_outlined),
-                  title: Text(l10n.sleepTargetLabel),
-                  subtitle: Text(
-                    formatMinutesAsTime(context, profile.targetSleepMinutes),
-                  ),
-                  onTap: () async {
-                    final selected = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay(
-                        hour: profile.targetSleepMinutes ~/ 60,
-                        minute: profile.targetSleepMinutes % 60,
-                      ),
-                    );
-                    if (selected == null) {
-                      return;
-                    }
-                    controller.updateProfile(
-                      profile.copyWith(
-                        targetSleepMinutes:
-                            selected.hour * 60 + selected.minute,
-                      ),
-                    );
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -1420,6 +1800,33 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
+
+class _ProfileSwitch extends StatelessWidget {
+  const _ProfileSwitch({
+    required this.title,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String title;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile.adaptive(
+      contentPadding: EdgeInsets.zero,
+      title: Text(title),
+      value: value,
+      onChanged: onChanged,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Shared UI primitives
+// ---------------------------------------------------------------------------
 
 class PageIntro extends StatelessWidget {
   const PageIntro({
@@ -1437,23 +1844,19 @@ class PageIntro extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: 1,
-          width: 72,
+          height: 3,
+          width: 32,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                context.palette.coffee,
-                context.palette.accent.withOpacity(0.24),
-              ],
-            ),
+            color: context.palette.coffee.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 18),
         Text(
           title,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
-                letterSpacing: 0.15,
+                letterSpacing: -0.3,
               ),
         ),
         const SizedBox(height: 6),
@@ -1461,6 +1864,7 @@ class PageIntro extends StatelessWidget {
           subtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: context.palette.inkMuted,
+                height: 1.5,
               ),
         ),
       ],
@@ -1481,20 +1885,14 @@ class SectionLabel extends StatelessWidget {
           text,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.1,
               ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Expanded(
           child: Container(
             height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  context.palette.border.withOpacity(0.85),
-                  context.palette.border.withOpacity(0),
-                ],
-              ),
-            ),
+            color: context.palette.border.withOpacity(0.4),
           ),
         ),
       ],
@@ -1517,142 +1915,68 @@ class LabCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final radius = compact ? 24.0 : 28.0;
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(radius),
+        color: palette.paper,
+        border: Border.all(color: palette.border.withOpacity(0.55)),
         boxShadow: [
           BoxShadow(
-            color: palette.shadow.withOpacity(0.75),
+            color: palette.shadow.withOpacity(0.35),
             blurRadius: 32,
-            offset: const Offset(0, 16),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      palette.paper,
-                      palette.paperAlt.withOpacity(0.28),
-                    ],
-                  ),
-                  border: Border.all(color: palette.border.withOpacity(0.72)),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(painter: _PaperTexturePainter(palette)),
-              ),
-            ),
-            Positioned(
-              top: 12,
-              left: 18,
-              child: Transform.rotate(
-                angle: -0.08,
-                child: _TapeStrip(color: palette.warning.withOpacity(0.16)),
-              ),
-            ),
-            Positioned(
-              top: 10,
-              right: 24,
-              child: Transform.rotate(
-                angle: 0.12,
-                child: _TapeStrip(color: palette.accent.withOpacity(0.14)),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(18, compact ? 20 : 24, 18, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        borderRadius: BorderRadius.circular(radius),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(22, compact ? 22 : 26, 22, 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: palette.paperAlt.withOpacity(0.52),
-                      borderRadius: BorderRadius.circular(10),
-                      border:
-                          Border.all(color: palette.border.withOpacity(0.55)),
+                      color: palette.coffee.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'Sample No. $sampleNumber',
+                      'No. $sampleNumber',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: palette.ink,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
+                            color: palette.coffee,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.8,
+                            fontFeatures: const [
+                              FontFeature.tabularFigures(),
+                            ],
                           ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  child,
+                  const Spacer(),
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: palette.accent.withOpacity(0.6),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              child,
+            ],
+          ),
         ),
       ),
     );
-  }
-}
-
-class _TapeStrip extends StatelessWidget {
-  const _TapeStrip({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 62,
-      height: 18,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(5),
-      ),
-    );
-  }
-}
-
-class _PaperTexturePainter extends CustomPainter {
-  const _PaperTexturePainter(this.palette);
-
-  final LabPalette palette;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final linePaint = Paint()
-      ..color = palette.border.withOpacity(0.08)
-      ..strokeWidth = 1;
-
-    for (double dy = 22; dy < size.height; dy += 26) {
-      canvas.drawLine(Offset(18, dy), Offset(size.width - 18, dy), linePaint);
-    }
-
-    final cornerPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          palette.warning.withOpacity(0.08),
-          Colors.transparent,
-        ],
-      ).createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size, cornerPaint);
-  }
-
-  @override
-  bool shouldRepaint(_PaperTexturePainter oldDelegate) {
-    return oldDelegate.palette != palette;
   }
 }
 
@@ -1669,89 +1993,34 @@ class MetricNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 150,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            context.palette.paperAlt.withOpacity(0.34),
-            context.palette.paper.withOpacity(0.2),
-          ],
-        ),
+        color: context.palette.paperAlt.withOpacity(0.35),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.palette.border),
+        border: Border.all(color: context.palette.border.withOpacity(0.45)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 28,
-            height: 3,
-            decoration: BoxDecoration(
-              color: context.palette.coffee,
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          const SizedBox(height: 8),
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: context.palette.inkMuted,
                 ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           Text(
             value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [
+                    FontFeature.tabularFigures(),
+                  ],
                 ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class ExplorePanel extends StatelessWidget {
-  const ExplorePanel({
-    super.key,
-    required this.emoji,
-    required this.title,
-    required this.body,
-  });
-
-  final String emoji;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: context.palette.paperAlt.withOpacity(0.4),
-            shape: BoxShape.circle,
-            border: Border.all(color: context.palette.border.withOpacity(0.75)),
-          ),
-          child: Text(emoji, style: const TextStyle(fontSize: 28)),
-        ),
-        const SizedBox(height: 14),
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Text(
-          body,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: context.palette.inkMuted,
-              ),
-        ),
-      ],
     );
   }
 }
@@ -1772,25 +2041,35 @@ class EmptyState extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 52,
-          height: 52,
+          width: 56,
+          height: 56,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: context.palette.paperAlt.withOpacity(0.34),
-            borderRadius: BorderRadius.circular(16),
+            color: context.palette.paperAlt.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: context.palette.border.withOpacity(0.45),
+            ),
           ),
           child: Icon(
             Icons.science_outlined,
             color: context.palette.coffee,
+            size: 24,
           ),
         ),
-        const SizedBox(height: 14),
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 18),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
         const SizedBox(height: 8),
         Text(
           body,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: context.palette.inkMuted,
+                height: 1.5,
               ),
         ),
       ],
@@ -1827,7 +2106,12 @@ class _ReferenceRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 96,
-            child: Text(label, style: Theme.of(context).textTheme.titleSmall),
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
           ),
           SizedBox(
             width: 36,
@@ -1836,6 +2120,9 @@ class _ReferenceRow extends StatelessWidget {
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: context.palette.coffee,
                     fontWeight: FontWeight.w800,
+                    fontFeatures: const [
+                      FontFeature.tabularFigures(),
+                    ],
                   ),
             ),
           ),
@@ -1860,38 +2147,9 @@ class LabWorkbenchBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     return IgnorePointer(
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _WorkbenchTexturePainter(palette),
-            ),
-          ),
-          Positioned(
-            top: -60,
-            right: -20,
-            child: _StainBlob(
-              color: palette.warning.withOpacity(0.12),
-              size: 180,
-            ),
-          ),
-          Positioned(
-            left: -30,
-            top: 180,
-            child: _StainBlob(
-              color: palette.accent.withOpacity(0.10),
-              size: 140,
-            ),
-          ),
-          Positioned(
-            right: 20,
-            bottom: 120,
-            child: _StainBlob(
-              color: palette.coffee.withOpacity(0.08),
-              size: 220,
-            ),
-          ),
-        ],
+      child: CustomPaint(
+        painter: _WorkbenchTexturePainter(palette),
+        size: Size.infinite,
       ),
     );
   }
@@ -1904,31 +2162,18 @@ class _WorkbenchTexturePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final grainPaint = Paint()
-      ..color = palette.border.withOpacity(0.08)
-      ..strokeWidth = 1;
-    for (double dy = 0; dy < size.height; dy += 18) {
-      canvas.drawLine(Offset(0, dy), Offset(size.width, dy), grainPaint);
-    }
-
     final vignettePaint = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(-0.4, -0.7),
-        radius: 1.2,
+        center: const Alignment(-0.3, -0.6),
+        radius: 1.4,
         colors: [
-          palette.paper.withOpacity(0.12),
+          palette.paper.withOpacity(0.08),
           Colors.transparent,
-          palette.background.withOpacity(0.22),
+          palette.backgroundAccent.withOpacity(0.25),
         ],
-        stops: const [0.0, 0.55, 1.0],
+        stops: const [0.0, 0.5, 1.0],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, vignettePaint);
-
-    final edgePaint = Paint()
-      ..color = palette.shadow.withOpacity(0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 32;
-    canvas.drawRect(Offset.zero & size, edgePaint);
   }
 
   @override
@@ -1937,29 +2182,9 @@ class _WorkbenchTexturePainter extends CustomPainter {
   }
 }
 
-class _StainBlob extends StatelessWidget {
-  const _StainBlob({required this.color, required this.size});
-
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color,
-            color.withOpacity(0),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// ---------------------------------------------------------------------------
+//  Chart
+// ---------------------------------------------------------------------------
 
 class TimelineChartPainter extends CustomPainter {
   TimelineChartPainter({
@@ -1992,7 +2217,7 @@ class TimelineChartPainter extends CustomPainter {
         }));
 
     final gridPaint = Paint()
-      ..color = palette.border.withOpacity(0.6)
+      ..color = palette.border.withOpacity(0.5)
       ..strokeWidth = 1;
     for (var step = 0; step <= 4; step++) {
       final dy = chartRect.top + chartRect.height * (step / 4);
@@ -2005,10 +2230,10 @@ class TimelineChartPainter extends CustomPainter {
 
     final lowRiskY = chartRect.bottom - (20 / maxY) * chartRect.height;
     final lowRiskPaint = Paint()
-      ..color = palette.success.withOpacity(0.16)
+      ..color = palette.success.withOpacity(0.12)
       ..style = PaintingStyle.fill;
     canvas.drawRect(
-      Rect.fromLTRB(
+      Rect.fromLTWH(
           chartRect.left, lowRiskY, chartRect.right, chartRect.bottom),
       lowRiskPaint,
     );
@@ -2036,7 +2261,7 @@ class TimelineChartPainter extends CustomPainter {
     canvas.drawPath(
       fillPath,
       Paint()
-        ..color = palette.coffee.withOpacity(0.14)
+        ..color = palette.coffee.withOpacity(0.12)
         ..style = PaintingStyle.fill,
     );
 
@@ -2044,7 +2269,7 @@ class TimelineChartPainter extends CustomPainter {
       linePath,
       Paint()
         ..color = palette.coffee
-        ..strokeWidth = 3
+        ..strokeWidth = 2.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round,
@@ -2058,7 +2283,7 @@ class TimelineChartPainter extends CustomPainter {
       Offset(nowDx, chartRect.bottom),
       Paint()
         ..color = palette.warning
-        ..strokeWidth = 2,
+        ..strokeWidth = 1.5,
     );
   }
 
@@ -2082,6 +2307,10 @@ class TimelineChartPainter extends CustomPainter {
         oldDelegate.palette != palette;
   }
 }
+
+// ---------------------------------------------------------------------------
+//  Formatting helpers
+// ---------------------------------------------------------------------------
 
 String displayNameForRecord(AppLocalizations l10n, IntakeRecord record) {
   return record.customName ??

@@ -16,6 +16,7 @@ class LabPalette extends ThemeExtension<LabPalette> {
     required this.shadow,
     required this.background,
     required this.backgroundAccent,
+    required this.grain,
   });
 
   final Color paper;
@@ -30,6 +31,7 @@ class LabPalette extends ThemeExtension<LabPalette> {
   final Color shadow;
   final Color background;
   final Color backgroundAccent;
+  final Color grain;
 
   @override
   LabPalette copyWith({
@@ -45,6 +47,7 @@ class LabPalette extends ThemeExtension<LabPalette> {
     Color? shadow,
     Color? background,
     Color? backgroundAccent,
+    Color? grain,
   }) {
     return LabPalette(
       paper: paper ?? this.paper,
@@ -59,6 +62,7 @@ class LabPalette extends ThemeExtension<LabPalette> {
       shadow: shadow ?? this.shadow,
       background: background ?? this.background,
       backgroundAccent: backgroundAccent ?? this.backgroundAccent,
+      grain: grain ?? this.grain,
     );
   }
 
@@ -82,6 +86,7 @@ class LabPalette extends ThemeExtension<LabPalette> {
       background: Color.lerp(background, other.background, t)!,
       backgroundAccent:
           Color.lerp(backgroundAccent, other.backgroundAccent, t)!,
+      grain: Color.lerp(grain, other.grain, t)!,
     );
   }
 }
@@ -89,18 +94,19 @@ class LabPalette extends ThemeExtension<LabPalette> {
 class AppTheme {
   static ThemeData light() {
     const palette = LabPalette(
-      paper: Color(0xFFF5E9CB),
-      paperAlt: Color(0xFFE6D2A7),
-      ink: Color(0xFF2B3950),
-      inkMuted: Color(0xFF6D6A63),
-      coffee: Color(0xFF6D4A35),
-      accent: Color(0xFF52796F),
-      warning: Color(0xFFAD6C3D),
-      success: Color(0xFF4D7C65),
-      border: Color(0xFFB79E77),
-      shadow: Color(0x332B1D14),
-      background: Color(0xFFEEE0BD),
-      backgroundAccent: Color(0xFFF8F1DE),
+      paper: Color(0xFFFAF6F0),
+      paperAlt: Color(0xFFF0EBE3),
+      ink: Color(0xFF3D3229),
+      inkMuted: Color(0xFF8A7E72),
+      coffee: Color(0xFF7B5E3F),
+      accent: Color(0xFFB8A88A),
+      warning: Color(0xFFC4956A),
+      success: Color(0xFF7A9E7E),
+      border: Color(0xFFE0D8CE),
+      shadow: Color(0x263D3229),
+      background: Color(0xFFF5F0E8),
+      backgroundAccent: Color(0xFFEDE8DE),
+      grain: Color(0x0D3D3229),
     );
 
     return _buildTheme(
@@ -112,18 +118,19 @@ class AppTheme {
 
   static ThemeData dark() {
     const palette = LabPalette(
-      paper: Color(0xFF332821),
-      paperAlt: Color(0xFF43352C),
-      ink: Color(0xFFF3E6C8),
-      inkMuted: Color(0xFFC9B79E),
-      coffee: Color(0xFFC28E62),
-      accent: Color(0xFF7BA58F),
-      warning: Color(0xFFE1A86C),
-      success: Color(0xFF7DBA8F),
-      border: Color(0xFF6D5945),
-      shadow: Color(0x66000000),
-      background: Color(0xFF211915),
-      backgroundAccent: Color(0xFF2B211C),
+      paper: Color(0xFF2C2520),
+      paperAlt: Color(0xFF3A322B),
+      ink: Color(0xFFF0E6D6),
+      inkMuted: Color(0xFFA89E90),
+      coffee: Color(0xFFC4A882),
+      accent: Color(0xFFD4C4A8),
+      warning: Color(0xFFD4A882),
+      success: Color(0xFF8BAE8E),
+      border: Color(0xFF4A4038),
+      shadow: Color(0x660A0806),
+      background: Color(0xFF1C1814),
+      backgroundAccent: Color(0xFF242018),
+      grain: Color(0x0DF0E6D2),
     );
 
     return _buildTheme(
@@ -165,7 +172,7 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: textTheme.titleLarge?.copyWith(
           color: palette.ink,
-          letterSpacing: 0.5,
+          letterSpacing: -0.2,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -179,7 +186,8 @@ class AppTheme {
             color: states.contains(WidgetState.selected)
                 ? palette.ink
                 : palette.inkMuted,
-            letterSpacing: 0.8,
+            letterSpacing: 0.6,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
         iconTheme: WidgetStateProperty.resolveWith(
@@ -206,7 +214,7 @@ class AppTheme {
         secondarySelectedColor: palette.paperAlt.withOpacity(0.7),
         side: BorderSide(color: palette.border.withOpacity(0.65)),
         labelStyle: textTheme.labelMedium?.copyWith(color: palette.ink),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       dialogTheme: DialogTheme(
         backgroundColor: palette.paper,
@@ -224,21 +232,38 @@ class AppTheme {
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          elevation: 0,
-          backgroundColor: palette.coffee,
-          foregroundColor:
-              brightness == Brightness.dark ? palette.background : Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          textStyle: textTheme.labelLarge,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        style: ButtonStyle(
+          elevation: WidgetStateProperty.all(0),
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.pressed)
+                ? palette.coffee.withOpacity(0.85)
+                : palette.coffee,
+          ),
+          foregroundColor: WidgetStateProperty.all(
+            brightness == Brightness.dark ? palette.background : Colors.white,
+          ),
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          ),
+          textStyle: WidgetStateProperty.all(textTheme.labelLarge),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          overlayColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.pressed)
+                ? Colors.black.withOpacity(0.12)
+                : Colors.transparent,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: palette.ink,
           textStyle: textTheme.labelLarge,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -248,17 +273,19 @@ class AppTheme {
             : palette.paper.withOpacity(0.72),
         labelStyle: textTheme.bodyMedium?.copyWith(color: palette.inkMuted),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide(color: palette.border.withOpacity(0.7)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide(color: palette.border.withOpacity(0.7)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide(color: palette.coffee, width: 1.6),
         ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       ),
       sliderTheme: baseTheme.sliderTheme.copyWith(
         activeTrackColor: palette.coffee,
@@ -266,6 +293,11 @@ class AppTheme {
         thumbColor: palette.coffee,
         overlayColor: palette.coffee.withOpacity(0.16),
         trackHeight: 5,
+        thumbShape: const RoundSliderThumbShape(
+          enabledThumbRadius: 10,
+          elevation: 2,
+        ),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
@@ -275,11 +307,16 @@ class AppTheme {
                 : palette.paper.withOpacity(0.18),
           ),
           foregroundColor: WidgetStateProperty.all(palette.ink),
-          textStyle: WidgetStateProperty.all(textTheme.labelMedium),
+          textStyle: WidgetStateProperty.all(textTheme.labelMedium?.copyWith(
+            fontFeatures: const [FontFeature.tabularFigures()],
+          )),
           side: WidgetStateProperty.all(
               BorderSide(color: palette.border.withOpacity(0.7))),
           shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
       ),
@@ -289,7 +326,31 @@ class AppTheme {
               .withOpacity(brightness == Brightness.dark ? 0.3 : 0.6),
           foregroundColor: palette.ink,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ).copyWith(
+          overlayColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.pressed)
+                ? palette.ink.withOpacity(0.08)
+                : Colors.transparent,
+          ),
+        ),
+      ),
+      listTileTheme: ListTileThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      ),
+      switchTheme: SwitchThemeData(
+        trackOutlineColor: WidgetStateProperty.all(palette.border),
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? palette.coffee
+              : palette.inkMuted,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? palette.coffee.withOpacity(0.35)
+              : palette.paperAlt,
         ),
       ),
     );
@@ -301,9 +362,9 @@ class AppTheme {
       displayColor: palette.ink,
     );
 
-    TextStyle serif(TextStyle? style,
+    TextStyle sans(TextStyle? style,
         {double? size, FontWeight? weight, double? spacing}) {
-      return GoogleFonts.notoSerif(
+      return GoogleFonts.notoSans(
         textStyle: style?.copyWith(
           color: palette.ink,
           fontSize: size,
@@ -321,46 +382,61 @@ class AppTheme {
           fontSize: size,
           fontWeight: weight,
           letterSpacing: spacing,
+          fontFeatures: const [
+            FontFeature.tabularFigures(),
+          ],
         ),
       );
     }
 
     return sansTextTheme.copyWith(
-      displayLarge: serif(sansTextTheme.displayLarge,
-          size: 52, weight: FontWeight.w700, spacing: 0.2),
-      displayMedium: serif(sansTextTheme.displayMedium,
-          size: 44, weight: FontWeight.w700, spacing: 0.2),
-      displaySmall: serif(sansTextTheme.displaySmall,
-          size: 36, weight: FontWeight.w700, spacing: 0.2),
-      headlineLarge: serif(sansTextTheme.headlineLarge,
-          weight: FontWeight.w700, spacing: 0.2),
-      headlineMedium: serif(sansTextTheme.headlineMedium,
-          weight: FontWeight.w700, spacing: 0.2),
-      headlineSmall: serif(sansTextTheme.headlineSmall,
-          weight: FontWeight.w700, spacing: 0.2),
-      titleLarge: serif(sansTextTheme.titleLarge,
-          weight: FontWeight.w700, spacing: 0.3),
-      titleMedium: serif(sansTextTheme.titleMedium,
-          weight: FontWeight.w700, spacing: 0.25),
+      displayLarge: sans(sansTextTheme.displayLarge,
+          size: 56, weight: FontWeight.w800, spacing: -1.0),
+      displayMedium: sans(sansTextTheme.displayMedium,
+          size: 48, weight: FontWeight.w800, spacing: -0.8),
+      displaySmall: sans(sansTextTheme.displaySmall,
+          size: 40, weight: FontWeight.w700, spacing: -0.5),
+      headlineLarge: sans(sansTextTheme.headlineLarge,
+          weight: FontWeight.w700, spacing: -0.4),
+      headlineMedium: sans(sansTextTheme.headlineMedium,
+          weight: FontWeight.w700, spacing: -0.3),
+      headlineSmall: sans(sansTextTheme.headlineSmall,
+          weight: FontWeight.w700, spacing: -0.2),
+      titleLarge: sans(sansTextTheme.titleLarge,
+          weight: FontWeight.w700, spacing: 0),
+      titleMedium: sans(sansTextTheme.titleMedium,
+          weight: FontWeight.w700, spacing: -0.1),
       titleSmall: GoogleFonts.notoSans(
         textStyle: sansTextTheme.titleSmall?.copyWith(
           color: palette.ink,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.1,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.05,
         ),
       ),
       labelLarge:
-          mono(sansTextTheme.labelLarge, weight: FontWeight.w600, spacing: 0.8),
+          mono(sansTextTheme.labelLarge, weight: FontWeight.w600, spacing: 0.6),
       labelMedium: mono(sansTextTheme.labelMedium,
-          weight: FontWeight.w600, spacing: 1.0),
+          weight: FontWeight.w600, spacing: 0.8),
       labelSmall:
-          mono(sansTextTheme.labelSmall, weight: FontWeight.w600, spacing: 0.8),
+          mono(sansTextTheme.labelSmall, weight: FontWeight.w600, spacing: 0.6),
       bodyLarge: GoogleFonts.notoSans(
-          textStyle: sansTextTheme.bodyLarge?.copyWith(height: 1.45)),
+        textStyle: sansTextTheme.bodyLarge?.copyWith(
+          height: 1.55,
+          fontSize: 16,
+        ),
+      ),
       bodyMedium: GoogleFonts.notoSans(
-          textStyle: sansTextTheme.bodyMedium?.copyWith(height: 1.45)),
+        textStyle: sansTextTheme.bodyMedium?.copyWith(
+          height: 1.55,
+          fontSize: 14,
+        ),
+      ),
       bodySmall: GoogleFonts.notoSans(
-          textStyle: sansTextTheme.bodySmall?.copyWith(height: 1.4)),
+        textStyle: sansTextTheme.bodySmall?.copyWith(
+          height: 1.45,
+          fontSize: 12,
+        ),
+      ),
     );
   }
 }
