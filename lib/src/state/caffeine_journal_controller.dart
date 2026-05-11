@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 import '../models/caffeine_profile.dart';
 import '../models/drink_item.dart';
 import '../models/intake_record.dart';
+import '../services/data_exchange_service.dart';
 import '../services/local_storage_service.dart';
 
 class CaffeineJournalController extends ChangeNotifier {
   CaffeineJournalController(this._storage);
 
   final LocalStorageService _storage;
+  final _exchange = DataExchangeService();
 
   final List<DrinkItem> availableDrinks = const [
     DrinkItem(
@@ -86,8 +89,7 @@ class CaffeineJournalController extends ChangeNotifier {
     _profile = await _storage.loadProfile() ?? CaffeineProfile.defaults();
 
     final storedRecords = await _storage.loadRecords();
-    _records =
-        storedRecords.isEmpty ? _seedRecords() : _sortRecords(storedRecords);
+    _records = _sortRecords(storedRecords);
 
     _refreshTicker ??= Timer.periodic(
       const Duration(minutes: 1),
@@ -185,26 +187,119 @@ class CaffeineJournalController extends ChangeNotifier {
     return List.unmodifiable(sorted);
   }
 
-  List<IntakeRecord> _seedRecords() {
+  Future<void> loadDemoData() async {
     final now = DateTime.now();
-    return _sortRecords([
+    final todayStart = DateTime(now.year, now.month, now.day, 8, 0);
+    final yesterdayStart = todayStart.subtract(const Duration(days: 1));
+    final twoDaysAgo = todayStart.subtract(const Duration(days: 2));
+
+    final demoRecords = <IntakeRecord>[
       IntakeRecord(
-        id: 'seed-1',
-        consumedAt: now.subtract(const Duration(hours: 3, minutes: 30)),
-        loggedAt: now.subtract(const Duration(hours: 3, minutes: 25)),
+        id: 'demo-1',
+        consumedAt: twoDaysAgo.add(const Duration(hours: 1)),
+        loggedAt: twoDaysAgo.add(const Duration(hours: 1, minutes: 5)),
         caffeineAmountMg: 150,
         emoji: '☕',
         sourceDrinkId: 'americano',
       ),
       IntakeRecord(
-        id: 'seed-2',
-        consumedAt: now.subtract(const Duration(hours: 1)),
-        loggedAt: now.subtract(const Duration(minutes: 55)),
+        id: 'demo-2',
+        consumedAt: twoDaysAgo.add(const Duration(hours: 4)),
+        loggedAt: twoDaysAgo.add(const Duration(hours: 4, minutes: 3)),
         caffeineAmountMg: 80,
         emoji: '🥛',
         sourceDrinkId: 'latte',
       ),
-    ]);
+      IntakeRecord(
+        id: 'demo-3',
+        consumedAt: yesterdayStart.add(const Duration(hours: 1)),
+        loggedAt: yesterdayStart.add(const Duration(hours: 1, minutes: 2)),
+        caffeineAmountMg: 150,
+        emoji: '☕',
+        sourceDrinkId: 'americano',
+      ),
+      IntakeRecord(
+        id: 'demo-4',
+        consumedAt: yesterdayStart.add(const Duration(hours: 6)),
+        loggedAt: yesterdayStart.add(const Duration(hours: 6, minutes: 5)),
+        caffeineAmountMg: 110,
+        emoji: '⚡',
+        sourceDrinkId: 'energy_drink',
+      ),
+      IntakeRecord(
+        id: 'demo-5',
+        consumedAt: yesterdayStart.add(const Duration(hours: 9)),
+        loggedAt: yesterdayStart.add(const Duration(hours: 9, minutes: 3)),
+        caffeineAmountMg: 45,
+        emoji: '🫖',
+        sourceDrinkId: 'black_tea',
+      ),
+      IntakeRecord(
+        id: 'demo-6',
+        consumedAt: todayStart.add(const Duration(hours: 1)),
+        loggedAt: todayStart.add(const Duration(hours: 1, minutes: 2)),
+        caffeineAmountMg: 65,
+        emoji: '⚗️',
+        sourceDrinkId: 'espresso',
+      ),
+      IntakeRecord(
+        id: 'demo-7',
+        consumedAt: todayStart.add(const Duration(hours: 3, minutes: 30)),
+        loggedAt: todayStart.add(const Duration(hours: 3, minutes: 33)),
+        caffeineAmountMg: 150,
+        emoji: '☕',
+        sourceDrinkId: 'americano',
+      ),
+      IntakeRecord(
+        id: 'demo-8',
+        consumedAt: todayStart.add(const Duration(hours: 5)),
+        loggedAt: todayStart.add(const Duration(hours: 5, minutes: 2)),
+        caffeineAmountMg: 28,
+        emoji: '🍃',
+        sourceDrinkId: 'green_tea',
+      ),
+    ];
+
+    _records = _sortRecords(demoRecords);
+    notifyListeners();
+    await _storage.saveRecords(_records);
+  }
+
+  Future<String?> exportToClipboard() async {
+    final json = _exchange.exportToJsonString(
+      profile: _profile,
+      records: _records,
+    );
+    await Clipboard.setData(ClipboardData(text: json));
+    return json;
+  }
+
+  Future<bool> importFromClipboard() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = data?.text;
+    if (text == null || text.isEmpty) {
+      return false;
+    }
+
+    final result = _exchange.parseImportJsonString(text);
+    if (result == null) {
+      return false;
+    }
+
+    _profile = result.profile;
+    _records = _sortRecords(result.records.toList());
+    notifyListeners();
+    await _storage.saveProfile(_profile);
+    await _storage.saveRecords(_records);
+    return true;
+  }
+
+  Future<void> clearAllData() async {
+    _records = const [];
+    _profile = CaffeineProfile.defaults();
+    notifyListeners();
+    await _storage.saveRecords(_records);
+    await _storage.saveProfile(_profile);
   }
 
   String _createId(DateTime timestamp) {

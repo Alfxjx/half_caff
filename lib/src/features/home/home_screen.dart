@@ -1795,9 +1795,104 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 24),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 120),
+            child: SectionLabel(text: l10n.dataManagementLabel),
+          ),
+          const SizedBox(height: 16),
+          FadeInSlideUp(
+            delay: const Duration(milliseconds: 160),
+            child: LabCard(
+              sampleNumber: '402',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FilledButton.tonalIcon(
+                    onPressed: () => controller.loadDemoData(),
+                    icon: const Icon(Icons.auto_fix_high_outlined),
+                    label: Text(l10n.loadDemoDataButton),
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await controller.exportToClipboard();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.exportSuccessMessage)),
+                      );
+                    },
+                    icon: const Icon(Icons.upload_outlined),
+                    label: Text(l10n.exportDataButton),
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final ok = await controller.importFromClipboard();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok
+                                ? l10n.importSuccessMessage
+                                : l10n.importFailureMessage,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.download_outlined),
+                    label: Text(l10n.importDataButton),
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () => _confirmClearData(context, controller),
+                    icon: const Icon(Icons.delete_forever_outlined,
+                        color: Colors.redAccent),
+                    label: Text(
+                      l10n.clearAllDataButton,
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmClearData(
+    BuildContext context,
+    CaffeineJournalController controller,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.clearDataConfirmTitle),
+          content: Text(l10n.clearDataConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.cancelLabel),
+            ),
+            FilledButton.tonal(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+              ),
+              child: Text(l10n.clearDataConfirmButton),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await controller.clearAllData();
+    }
   }
 }
 

@@ -136,5 +136,16 @@
         "type": "int"
       }
     }
-  }
+  },
+  "dataManagementLabel": "Data",
+  "loadDemoDataButton": "Load demo data",
+  "exportDataButton": "Export data",
+  "importDataButton": "Import data",
+  "clearAllDataButton": "Clear all data",
+  "exportSuccessMessage": "Data exported to clipboard",
+  "importSuccessMessage": "Data imported successfully",
+  "importFailureMessage": "Import failed — invalid data",
+  "clearDataConfirmTitle": "Clear all data?",
+  "clearDataConfirmBody": "This will delete all records and reset your profile. This cannot be undone.",
+  "clearDataConfirmButton": "Clear all"
 }

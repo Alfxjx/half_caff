@@ -13,6 +13,7 @@ This is a Flutter application called **half_caff**, currently in early developme
 - **Run tests**: `flutter test`
 - **Run a single test file**: `flutter test test/widget_test.dart`
 - **Analyze / lint**: `flutter analyze`
+- **Generate code** (localization, etc.): `flutter generate`
 - **Build APK**: `flutter build apk`
 - **Build web**: `flutter build web`
 
@@ -22,8 +23,17 @@ The project is a standard multi-platform Flutter app targeting Android, iOS, web
 
 Key locations:
 - [`lib/main.dart`](lib/main.dart): Entry point and current root widget.
-- [`sample_app/index_prototype.html`](sample_app/index_prototype.html): Functional reference for UI, copy, and calculation logic. Contains pharmacokinetic formulas, half-life data, drink caffeine content tables, and Chart.js-based interactive graphs.
+- [`sample_app/index_prototype.html`](sample_app/index_prototype.html): Functional reference for UI, copy, and calculation logic. Contains pharmacokinetic formulas, half-life data, drink caffeine content tables, and Chart.js-based interactive graphs. The prototype content is in Chinese (`zh-CN`).
 - [`test/widget_test.dart`](test/widget_test.dart): Default widget test.
+
+## Dependencies
+
+Key packages already in use (see [`pubspec.yaml`](pubspec.yaml)):
+- [`google_fonts`](https://pub.dev/packages/google_fonts) — for custom typography.
+- [`shared_preferences`](https://pub.dev/packages/shared_preferences) — for local persistent storage.
+- [`flutter_localizations`](https://api.flutter.dev/flutter/flutter_localizations/flutter_localizations-library.html) — SDK localization support.
+
+The project targets **Dart SDK ^3.5.1**.
 
 ## Linting
 
