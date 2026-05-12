@@ -5,7 +5,8 @@
       "Bash(flutter test *)",
       "Bash(flutter gen-l10n *)",
       "Bash(flutter pub *)",
-      "Bash(flutter generate *)"
+      "Bash(flutter generate *)",
+      "Bash(flutter build:*)"
     ]
   }
 }

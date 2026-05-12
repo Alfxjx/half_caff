@@ -2,445 +2,582 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 @immutable
-class LabPalette extends ThemeExtension<LabPalette> {
-  const LabPalette({
-    required this.paper,
+class ClaudePalette extends ThemeExtension<ClaudePalette> {
+  const ClaudePalette({
+    required this.canvas,
     required this.paperAlt,
     required this.ink,
-    required this.inkMuted,
-    required this.coffee,
-    required this.accent,
-    required this.warning,
+    required this.body,
+    required this.bodyStrong,
+    required this.muted,
+    required this.mutedSoft,
+    required this.hairline,
+    required this.hairlineSoft,
+    required this.surfaceCard,
+    required this.surfaceCreamStrong,
+    required this.surfaceDark,
+    required this.surfaceDarkElevated,
+    required this.surfaceDarkSoft,
+    required this.primary,
+    required this.primaryActive,
+    required this.primaryDisabled,
+    required this.onPrimary,
+    required this.onDark,
+    required this.onDarkSoft,
+    required this.accentTeal,
+    required this.accentAmber,
     required this.success,
-    required this.border,
+    required this.warning,
+    required this.error,
     required this.shadow,
-    required this.background,
-    required this.backgroundAccent,
-    required this.grain,
   });
 
-  final Color paper;
+  // Canvas & Surface
+  final Color canvas;
   final Color paperAlt;
+  final Color surfaceCard;
+  final Color surfaceCreamStrong;
+
+  // Ink / Text
   final Color ink;
-  final Color inkMuted;
-  final Color coffee;
-  final Color accent;
-  final Color warning;
+  final Color body;
+  final Color bodyStrong;
+  final Color muted;
+  final Color mutedSoft;
+
+  // Borders
+  final Color hairline;
+  final Color hairlineSoft;
+
+  // Dark Surface
+  final Color surfaceDark;
+  final Color surfaceDarkElevated;
+  final Color surfaceDarkSoft;
+
+  // Primary / Coral
+  final Color primary;
+  final Color primaryActive;
+  final Color primaryDisabled;
+  final Color onPrimary;
+
+  // On Dark
+  final Color onDark;
+  final Color onDarkSoft;
+
+  // Accents
+  final Color accentTeal;
+  final Color accentAmber;
+
+  // Semantic
   final Color success;
-  final Color border;
+  final Color warning;
+  final Color error;
+
+  // Shadow
   final Color shadow;
-  final Color background;
-  final Color backgroundAccent;
-  final Color grain;
 
   @override
-  LabPalette copyWith({
-    Color? paper,
+  ClaudePalette copyWith({
+    Color? canvas,
     Color? paperAlt,
     Color? ink,
-    Color? inkMuted,
-    Color? coffee,
-    Color? accent,
-    Color? warning,
+    Color? body,
+    Color? bodyStrong,
+    Color? muted,
+    Color? mutedSoft,
+    Color? hairline,
+    Color? hairlineSoft,
+    Color? surfaceCard,
+    Color? surfaceCreamStrong,
+    Color? surfaceDark,
+    Color? surfaceDarkElevated,
+    Color? surfaceDarkSoft,
+    Color? primary,
+    Color? primaryActive,
+    Color? primaryDisabled,
+    Color? onPrimary,
+    Color? onDark,
+    Color? onDarkSoft,
+    Color? accentTeal,
+    Color? accentAmber,
     Color? success,
-    Color? border,
+    Color? warning,
+    Color? error,
     Color? shadow,
-    Color? background,
-    Color? backgroundAccent,
-    Color? grain,
   }) {
-    return LabPalette(
-      paper: paper ?? this.paper,
+    return ClaudePalette(
+      canvas: canvas ?? this.canvas,
       paperAlt: paperAlt ?? this.paperAlt,
       ink: ink ?? this.ink,
-      inkMuted: inkMuted ?? this.inkMuted,
-      coffee: coffee ?? this.coffee,
-      accent: accent ?? this.accent,
-      warning: warning ?? this.warning,
+      body: body ?? this.body,
+      bodyStrong: bodyStrong ?? this.bodyStrong,
+      muted: muted ?? this.muted,
+      mutedSoft: mutedSoft ?? this.mutedSoft,
+      hairline: hairline ?? this.hairline,
+      hairlineSoft: hairlineSoft ?? this.hairlineSoft,
+      surfaceCard: surfaceCard ?? this.surfaceCard,
+      surfaceCreamStrong: surfaceCreamStrong ?? this.surfaceCreamStrong,
+      surfaceDark: surfaceDark ?? this.surfaceDark,
+      surfaceDarkElevated: surfaceDarkElevated ?? this.surfaceDarkElevated,
+      surfaceDarkSoft: surfaceDarkSoft ?? this.surfaceDarkSoft,
+      primary: primary ?? this.primary,
+      primaryActive: primaryActive ?? this.primaryActive,
+      primaryDisabled: primaryDisabled ?? this.primaryDisabled,
+      onPrimary: onPrimary ?? this.onPrimary,
+      onDark: onDark ?? this.onDark,
+      onDarkSoft: onDarkSoft ?? this.onDarkSoft,
+      accentTeal: accentTeal ?? this.accentTeal,
+      accentAmber: accentAmber ?? this.accentAmber,
       success: success ?? this.success,
-      border: border ?? this.border,
+      warning: warning ?? this.warning,
+      error: error ?? this.error,
       shadow: shadow ?? this.shadow,
-      background: background ?? this.background,
-      backgroundAccent: backgroundAccent ?? this.backgroundAccent,
-      grain: grain ?? this.grain,
     );
   }
 
   @override
-  LabPalette lerp(ThemeExtension<LabPalette>? other, double t) {
-    if (other is! LabPalette) {
-      return this;
-    }
-
-    return LabPalette(
-      paper: Color.lerp(paper, other.paper, t)!,
+  ClaudePalette lerp(ThemeExtension<ClaudePalette>? other, double t) {
+    if (other is! ClaudePalette) return this;
+    return ClaudePalette(
+      canvas: Color.lerp(canvas, other.canvas, t)!,
       paperAlt: Color.lerp(paperAlt, other.paperAlt, t)!,
       ink: Color.lerp(ink, other.ink, t)!,
-      inkMuted: Color.lerp(inkMuted, other.inkMuted, t)!,
-      coffee: Color.lerp(coffee, other.coffee, t)!,
-      accent: Color.lerp(accent, other.accent, t)!,
-      warning: Color.lerp(warning, other.warning, t)!,
+      body: Color.lerp(body, other.body, t)!,
+      bodyStrong: Color.lerp(bodyStrong, other.bodyStrong, t)!,
+      muted: Color.lerp(muted, other.muted, t)!,
+      mutedSoft: Color.lerp(mutedSoft, other.mutedSoft, t)!,
+      hairline: Color.lerp(hairline, other.hairline, t)!,
+      hairlineSoft: Color.lerp(hairlineSoft, other.hairlineSoft, t)!,
+      surfaceCard: Color.lerp(surfaceCard, other.surfaceCard, t)!,
+      surfaceCreamStrong:
+          Color.lerp(surfaceCreamStrong, other.surfaceCreamStrong, t)!,
+      surfaceDark: Color.lerp(surfaceDark, other.surfaceDark, t)!,
+      surfaceDarkElevated:
+          Color.lerp(surfaceDarkElevated, other.surfaceDarkElevated, t)!,
+      surfaceDarkSoft:
+          Color.lerp(surfaceDarkSoft, other.surfaceDarkSoft, t)!,
+      primary: Color.lerp(primary, other.primary, t)!,
+      primaryActive: Color.lerp(primaryActive, other.primaryActive, t)!,
+      primaryDisabled:
+          Color.lerp(primaryDisabled, other.primaryDisabled, t)!,
+      onPrimary: Color.lerp(onPrimary, other.onPrimary, t)!,
+      onDark: Color.lerp(onDark, other.onDark, t)!,
+      onDarkSoft: Color.lerp(onDarkSoft, other.onDarkSoft, t)!,
+      accentTeal: Color.lerp(accentTeal, other.accentTeal, t)!,
+      accentAmber: Color.lerp(accentAmber, other.accentAmber, t)!,
       success: Color.lerp(success, other.success, t)!,
-      border: Color.lerp(border, other.border, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      error: Color.lerp(error, other.error, t)!,
       shadow: Color.lerp(shadow, other.shadow, t)!,
-      background: Color.lerp(background, other.background, t)!,
-      backgroundAccent:
-          Color.lerp(backgroundAccent, other.backgroundAccent, t)!,
-      grain: Color.lerp(grain, other.grain, t)!,
     );
   }
 }
 
 class AppTheme {
-  static ThemeData light() {
-    const palette = LabPalette(
-      paper: Color(0xFFFAF6F0),
-      paperAlt: Color(0xFFF0EBE3),
-      ink: Color(0xFF3D3229),
-      inkMuted: Color(0xFF8A7E72),
-      coffee: Color(0xFF7B5E3F),
-      accent: Color(0xFFB8A88A),
-      warning: Color(0xFFC4956A),
-      success: Color(0xFF7A9E7E),
-      border: Color(0xFFE0D8CE),
-      shadow: Color(0x263D3229),
-      background: Color(0xFFF5F0E8),
-      backgroundAccent: Color(0xFFEDE8DE),
-      grain: Color(0x0D3D3229),
-    );
+  // Light palette — warm cream canvas + coral + dark navy surfaces
+  static const _light = ClaudePalette(
+    canvas: Color(0xFFFAF9F5),
+    paperAlt: Color(0xFFF5F0E8),
+    ink: Color(0xFF141413),
+    body: Color(0xFF3D3D3A),
+    bodyStrong: Color(0xFF252523),
+    muted: Color(0xFF6C6A64),
+    mutedSoft: Color(0xFF8E8B82),
+    hairline: Color(0xFFE6DFD8),
+    hairlineSoft: Color(0xFFEBE6DF),
+    surfaceCard: Color(0xFFEFE9DE),
+    surfaceCreamStrong: Color(0xFFE8E0D2),
+    surfaceDark: Color(0xFF181715),
+    surfaceDarkElevated: Color(0xFF252320),
+    surfaceDarkSoft: Color(0xFF1F1E1B),
+    primary: Color(0xFFCC785C),
+    primaryActive: Color(0xFFA9583E),
+    primaryDisabled: Color(0xFFE6DFD8),
+    onPrimary: Color(0xFFFFFFFF),
+    onDark: Color(0xFFFAF9F5),
+    onDarkSoft: Color(0xFFA09D96),
+    accentTeal: Color(0xFF5DB8A6),
+    accentAmber: Color(0xFFE8A55A),
+    success: Color(0xFF5DB872),
+    warning: Color(0xFFD4A017),
+    error: Color(0xFFC64545),
+    shadow: Color(0x14000000),
+  );
 
-    return _buildTheme(
-      palette: palette,
-      brightness: Brightness.light,
-      baseTheme: ThemeData.light(),
-    );
-  }
+  // Dark palette — dark navy base with warm cream text
+  static const _dark = ClaudePalette(
+    canvas: Color(0xFF1C1A18),
+    paperAlt: Color(0xFF252320),
+    ink: Color(0xFFF0EBE3),
+    body: Color(0xFFB8B2A8),
+    bodyStrong: Color(0xFFD4CEC4),
+    muted: Color(0xFF8A847A),
+    mutedSoft: Color(0xFF6A645C),
+    hairline: Color(0xFF3A3630),
+    hairlineSoft: Color(0xFF2E2A26),
+    surfaceCard: Color(0xFF2A2620),
+    surfaceCreamStrong: Color(0xFF32302A),
+    surfaceDark: Color(0xFF141210),
+    surfaceDarkElevated: Color(0xFF1E1C18),
+    surfaceDarkSoft: Color(0xFF181614),
+    primary: Color(0xFFCC785C),
+    primaryActive: Color(0xFFB86848),
+    primaryDisabled: Color(0xFF3A3630),
+    onPrimary: Color(0xFFFFFFFF),
+    onDark: Color(0xFFFAF9F5),
+    onDarkSoft: Color(0xFF8A847A),
+    accentTeal: Color(0xFF5DB8A6),
+    accentAmber: Color(0xFFE8A55A),
+    success: Color(0xFF5DB872),
+    warning: Color(0xFFD4A017),
+    error: Color(0xFFC64545),
+    shadow: Color(0x40000000),
+  );
 
-  static ThemeData dark() {
-    const palette = LabPalette(
-      paper: Color(0xFF2C2520),
-      paperAlt: Color(0xFF3A322B),
-      ink: Color(0xFFF0E6D6),
-      inkMuted: Color(0xFFA89E90),
-      coffee: Color(0xFFC4A882),
-      accent: Color(0xFFD4C4A8),
-      warning: Color(0xFFD4A882),
-      success: Color(0xFF8BAE8E),
-      border: Color(0xFF4A4038),
-      shadow: Color(0x660A0806),
-      background: Color(0xFF1C1814),
-      backgroundAccent: Color(0xFF242018),
-      grain: Color(0x0DF0E6D2),
-    );
+  static ThemeData light() => _build(_light, Brightness.light);
+  static ThemeData dark() => _build(_dark, Brightness.dark);
 
-    return _buildTheme(
-      palette: palette,
-      brightness: Brightness.dark,
-      baseTheme: ThemeData.dark(),
-    );
-  }
+  static ThemeData _build(ClaudePalette p, Brightness brightness) {
+    final base = ThemeData(brightness: brightness);
+    final textTheme = _buildTextTheme(p, brightness);
 
-  static ThemeData _buildTheme({
-    required LabPalette palette,
-    required Brightness brightness,
-    required ThemeData baseTheme,
-  }) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: palette.coffee,
-      brightness: brightness,
-      primary: palette.coffee,
-      secondary: palette.accent,
-      surface: palette.paper,
-      onSurface: palette.ink,
-    );
-    final textTheme = _labTextTheme(baseTheme.textTheme, palette);
-
-    return ThemeData(
-      useMaterial3: true,
-      brightness: brightness,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: palette.background,
-      cardColor: palette.paper,
-      dividerColor: palette.border,
-      extensions: [palette],
+    return base.copyWith(
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: p.primary,
+        onPrimary: p.onPrimary,
+        primaryContainer: p.surfaceCard,
+        onPrimaryContainer: p.ink,
+        secondary: p.accentTeal,
+        onSecondary: p.onDark,
+        secondaryContainer: p.surfaceDarkElevated,
+        onSecondaryContainer: p.onDark,
+        tertiary: p.accentAmber,
+        onTertiary: p.ink,
+        tertiaryContainer: p.surfaceCreamStrong,
+        onTertiaryContainer: p.ink,
+        surface: p.canvas,
+        onSurface: p.ink,
+        surfaceContainerHighest: p.paperAlt,
+        onSurfaceVariant: p.muted,
+        error: p.error,
+        onError: p.onPrimary,
+        outline: p.hairline,
+        outlineVariant: p.hairlineSoft,
+      ),
+      scaffoldBackgroundColor: p.canvas,
+      cardColor: p.surfaceCard,
+      dividerColor: p.hairline,
+      extensions: [p],
       textTheme: textTheme,
+      // -------------------------------------------------------------------
+      // AppBar — cream nav bar, no elevation
+      // -------------------------------------------------------------------
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
-        foregroundColor: palette.ink,
+        backgroundColor: p.canvas,
+        foregroundColor: p.ink,
         elevation: 0,
+        scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        titleTextStyle: textTheme.titleLarge?.copyWith(
-          color: palette.ink,
-          letterSpacing: -0.2,
-        ),
-      ),
+        titleTextStyle: textTheme.titleMedium?.copyWith(
+          color: p.ink,
+          fontWeight: FontWeight.w600,
+        )),
+      // -------------------------------------------------------------------
+      // NavigationBar — bottom tab bar, cream surface
+      // -------------------------------------------------------------------
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.transparent,
+        backgroundColor: p.canvas,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: palette.paperAlt
-            .withOpacity(brightness == Brightness.dark ? 0.9 : 0.72),
+        elevation: 0,
         height: 72,
-        labelTextStyle: WidgetStateProperty.resolveWith(
-          (states) => textTheme.labelSmall?.copyWith(
-            color: states.contains(WidgetState.selected)
-                ? palette.ink
-                : palette.inkMuted,
-            letterSpacing: 0.6,
+        indicatorColor: p.surfaceCard,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return textTheme.labelMedium?.copyWith(
+            color: selected ? p.ink : p.muted,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
             fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-        iconTheme: WidgetStateProperty.resolveWith(
-          (states) => IconThemeData(
-            color: states.contains(WidgetState.selected)
-                ? palette.coffee
-                : palette.inkMuted,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: selected ? p.primary : p.muted,
             size: 24,
-          ),
-        ),
+          );
+        }),
       ),
+      // -------------------------------------------------------------------
+      // Cards — feature-card style, no shadow, hairline border
+      // -------------------------------------------------------------------
       cardTheme: CardTheme(
-        color: Colors.transparent,
+        color: p.surfaceCard,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: BorderSide(color: palette.border.withOpacity(0.5)),
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: p.hairline.withOpacity(0.6)),
         ),
       ),
-      chipTheme: baseTheme.chipTheme.copyWith(
-        backgroundColor: palette.paperAlt.withOpacity(0.35),
-        selectedColor: palette.paperAlt.withOpacity(0.7),
-        secondarySelectedColor: palette.paperAlt.withOpacity(0.7),
-        side: BorderSide(color: palette.border.withOpacity(0.65)),
-        labelStyle: textTheme.labelMedium?.copyWith(color: palette.ink),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-      dialogTheme: DialogTheme(
-        backgroundColor: palette.paper,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        titleTextStyle: textTheme.titleLarge,
-        contentTextStyle: textTheme.bodyMedium,
-      ),
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: palette.paper,
-        surfaceTintColor: Colors.transparent,
-        modalBackgroundColor: palette.paper,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-      ),
+      // -------------------------------------------------------------------
+      // Buttons — primary (coral), secondary (cream), text-link
+      // -------------------------------------------------------------------
       filledButtonTheme: FilledButtonThemeData(
         style: ButtonStyle(
           elevation: WidgetStateProperty.all(0),
-          backgroundColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.pressed)
-                ? palette.coffee.withOpacity(0.85)
-                : palette.coffee,
-          ),
-          foregroundColor: WidgetStateProperty.all(
-            brightness == Brightness.dark ? palette.background : Colors.white,
-          ),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) return p.primaryDisabled;
+            if (states.contains(WidgetState.pressed)) return p.primaryActive;
+            return p.primary;
+          }),
+          foregroundColor: WidgetStateProperty.all(p.onPrimary),
+          textStyle: WidgetStateProperty.all(textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.1,
+          )),
           padding: WidgetStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           ),
-          textStyle: WidgetStateProperty.all(textTheme.labelLarge),
+          minimumSize: WidgetStateProperty.all(const Size(0, 40)),
           shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          overlayColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.pressed)
-                ? Colors.black.withOpacity(0.12)
-                : Colors.transparent,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: ButtonStyle(
+          elevation: WidgetStateProperty.all(0),
+          backgroundColor: WidgetStateProperty.all(p.canvas),
+          foregroundColor: WidgetStateProperty.all(p.ink),
+          textStyle: WidgetStateProperty.all(textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          )),
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          minimumSize: WidgetStateProperty.all(const Size(0, 40)),
+          side: WidgetStateProperty.all(
+            BorderSide(color: p.hairline),
+          ),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: palette.ink,
-          textStyle: textTheme.labelLarge,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+          foregroundColor: p.primary,
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          backgroundColor: p.surfaceCard,
+          foregroundColor: p.ink,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          minimumSize: const Size(36, 36),
+        ),
+      ),
+      // -------------------------------------------------------------------
+      // Inputs — text-input style per design system
+      // -------------------------------------------------------------------
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: brightness == Brightness.dark
-            ? palette.paperAlt.withOpacity(0.82)
-            : palette.paper.withOpacity(0.72),
-        labelStyle: textTheme.bodyMedium?.copyWith(color: palette.inkMuted),
+            ? p.paperAlt.withOpacity(0.5)
+            : p.canvas,
+        labelStyle: textTheme.bodyMedium?.copyWith(color: p.muted),
+        hintStyle: textTheme.bodyMedium?.copyWith(color: p.mutedSoft),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: palette.border.withOpacity(0.7)),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: p.hairline),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: palette.border.withOpacity(0.7)),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: p.hairline.withOpacity(0.7)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: palette.coffee, width: 1.6),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: p.primary, width: 1.5),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       ),
-      sliderTheme: baseTheme.sliderTheme.copyWith(
-        activeTrackColor: palette.coffee,
-        inactiveTrackColor: palette.paperAlt.withOpacity(0.5),
-        thumbColor: palette.coffee,
-        overlayColor: palette.coffee.withOpacity(0.16),
-        trackHeight: 5,
-        thumbShape: const RoundSliderThumbShape(
-          enabledThumbRadius: 10,
-          elevation: 2,
-        ),
+      // -------------------------------------------------------------------
+      // Slider
+      // -------------------------------------------------------------------
+      sliderTheme: SliderThemeData(
+        activeTrackColor: p.primary,
+        inactiveTrackColor: p.hairline,
+        thumbColor: p.primary,
+        overlayColor: p.primary.withOpacity(0.12),
+        trackHeight: 4,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
       ),
+      // -------------------------------------------------------------------
+      // SegmentedButton — category-tab style
+      // -------------------------------------------------------------------
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? palette.paperAlt.withOpacity(0.74)
-                : palette.paper.withOpacity(0.18),
-          ),
-          foregroundColor: WidgetStateProperty.all(palette.ink),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return p.surfaceCard;
+            }
+            return Colors.transparent;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) return p.ink;
+            return p.muted;
+          }),
           textStyle: WidgetStateProperty.all(textTheme.labelMedium?.copyWith(
-            fontFeatures: const [FontFeature.tabularFigures()],
+            fontWeight: FontWeight.w600,
           )),
           side: WidgetStateProperty.all(
-              BorderSide(color: palette.border.withOpacity(0.7))),
+            BorderSide(color: p.hairline.withOpacity(0.7)),
+          ),
           shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
       ),
-      iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(
-          backgroundColor: palette.paper
-              .withOpacity(brightness == Brightness.dark ? 0.3 : 0.6),
-          foregroundColor: palette.ink,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ).copyWith(
-          overlayColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.pressed)
-                ? palette.ink.withOpacity(0.08)
-                : Colors.transparent,
-          ),
+      // -------------------------------------------------------------------
+      // Chip — badge-pill style
+      // -------------------------------------------------------------------
+      chipTheme: ChipThemeData(
+        backgroundColor: p.surfaceCard,
+        selectedColor: p.surfaceCreamStrong,
+        labelStyle: textTheme.labelMedium?.copyWith(color: p.ink),
+        side: BorderSide(color: p.hairline.withOpacity(0.6)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      ),
+      // -------------------------------------------------------------------
+      // Dialog / BottomSheet — cream surface
+      // -------------------------------------------------------------------
+      dialogTheme: DialogTheme(
+        backgroundColor: p.surfaceCard,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titleTextStyle: textTheme.titleLarge?.copyWith(color: p.ink),
+        contentTextStyle: textTheme.bodyMedium?.copyWith(color: p.body),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: p.surfaceCard,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
       ),
+      // -------------------------------------------------------------------
+      // ListTile
+      // -------------------------------------------------------------------
       listTileTheme: ListTileThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
+      // -------------------------------------------------------------------
+      // Switch
+      // -------------------------------------------------------------------
       switchTheme: SwitchThemeData(
-        trackOutlineColor: WidgetStateProperty.all(palette.border),
-        thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? palette.coffee
-              : palette.inkMuted,
-        ),
-        trackColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? palette.coffee.withOpacity(0.35)
-              : palette.paperAlt,
-        ),
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return p.primary;
+          return p.mutedSoft;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return p.primary.withOpacity(0.3);
+          }
+          return p.hairline;
+        }),
       ),
     );
   }
 
-  static TextTheme _labTextTheme(TextTheme base, LabPalette palette) {
-    final sansTextTheme = GoogleFonts.notoSansTextTheme(base).apply(
-      bodyColor: palette.ink,
-      displayColor: palette.ink,
+  static TextTheme _buildTextTheme(ClaudePalette p, Brightness brightness) {
+    // Use Inter for body / UI labels (StyreneB substitute)
+    final inter = GoogleFonts.interTextTheme().apply(
+      bodyColor: p.body,
+      displayColor: p.ink,
     );
 
-    TextStyle sans(TextStyle? style,
-        {double? size, FontWeight? weight, double? spacing}) {
-      return GoogleFonts.notoSans(
-        textStyle: style?.copyWith(
-          color: palette.ink,
+    // Use Cormorant Garamond for display headlines
+    // (Copernicus/Tiempos aren't available as web fonts)
+    final serif = GoogleFonts.cormorantTextTheme().apply(
+      bodyColor: p.ink,
+      displayColor: p.ink,
+    );
+
+    TextStyle display(
+      TextStyle? base, {
+      required double size,
+      double letterSpacing = 0,
+      FontWeight weight = FontWeight.w400,
+      double height = 1.1,
+    }) {
+      return base!.copyWith(
+        fontFamily: 'Cormorant Garamond, serif',
+        fontSize: size,
+        fontWeight: weight,
+        letterSpacing: letterSpacing,
+        height: height,
+        color: p.ink,
+      );
+    }
+
+    TextStyle sans(
+      TextStyle? base, {
+      double? size,
+      FontWeight? weight,
+      double letterSpacing = 0,
+      double? height,
+      Color? color,
+    }) {
+      return GoogleFonts.inter(
+        textStyle: (base ?? inter.bodyMedium)?.copyWith(
           fontSize: size,
           fontWeight: weight,
-          letterSpacing: spacing,
+          letterSpacing: letterSpacing,
+          height: height,
+          color: color ?? p.body,
         ),
       );
     }
 
-    TextStyle mono(TextStyle? style,
-        {double? size, FontWeight? weight, double? spacing}) {
-      return GoogleFonts.ibmPlexMono(
-        textStyle: style?.copyWith(
-          color: palette.ink,
-          fontSize: size,
-          fontWeight: weight,
-          letterSpacing: spacing,
-          fontFeatures: const [
-            FontFeature.tabularFigures(),
-          ],
-        ),
-      );
-    }
-
-    return sansTextTheme.copyWith(
-      displayLarge: sans(sansTextTheme.displayLarge,
-          size: 56, weight: FontWeight.w800, spacing: -1.0),
-      displayMedium: sans(sansTextTheme.displayMedium,
-          size: 48, weight: FontWeight.w800, spacing: -0.8),
-      displaySmall: sans(sansTextTheme.displaySmall,
-          size: 40, weight: FontWeight.w700, spacing: -0.5),
-      headlineLarge: sans(sansTextTheme.headlineLarge,
-          weight: FontWeight.w700, spacing: -0.4),
-      headlineMedium: sans(sansTextTheme.headlineMedium,
-          weight: FontWeight.w700, spacing: -0.3),
-      headlineSmall: sans(sansTextTheme.headlineSmall,
-          weight: FontWeight.w700, spacing: -0.2),
-      titleLarge: sans(sansTextTheme.titleLarge,
-          weight: FontWeight.w700, spacing: 0),
-      titleMedium: sans(sansTextTheme.titleMedium,
-          weight: FontWeight.w700, spacing: -0.1),
-      titleSmall: GoogleFonts.notoSans(
-        textStyle: sansTextTheme.titleSmall?.copyWith(
-          color: palette.ink,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.05,
-        ),
-      ),
-      labelLarge:
-          mono(sansTextTheme.labelLarge, weight: FontWeight.w600, spacing: 0.6),
-      labelMedium: mono(sansTextTheme.labelMedium,
-          weight: FontWeight.w600, spacing: 0.8),
-      labelSmall:
-          mono(sansTextTheme.labelSmall, weight: FontWeight.w600, spacing: 0.6),
-      bodyLarge: GoogleFonts.notoSans(
-        textStyle: sansTextTheme.bodyLarge?.copyWith(
-          height: 1.55,
-          fontSize: 16,
-        ),
-      ),
-      bodyMedium: GoogleFonts.notoSans(
-        textStyle: sansTextTheme.bodyMedium?.copyWith(
-          height: 1.55,
-          fontSize: 14,
-        ),
-      ),
-      bodySmall: GoogleFonts.notoSans(
-        textStyle: sansTextTheme.bodySmall?.copyWith(
-          height: 1.45,
-          fontSize: 12,
-        ),
-      ),
+    return TextTheme(
+      // Display — serif, weight 400, negative tracking
+      displayLarge: display(serif.displayLarge, size: 64, letterSpacing: -1.5, height: 1.05),
+      displayMedium: display(serif.displayMedium, size: 48, letterSpacing: -1.0, height: 1.1),
+      displaySmall: display(serif.displaySmall, size: 36, letterSpacing: -0.5, height: 1.15),
+      headlineLarge: display(serif.headlineLarge, size: 32, letterSpacing: -0.4, height: 1.15),
+      headlineMedium: display(serif.headlineMedium, size: 28, letterSpacing: -0.3, height: 1.2),
+      headlineSmall: display(serif.headlineSmall, size: 24, letterSpacing: -0.2, height: 1.25),
+      // Title — Inter, weight 500
+      titleLarge: sans(inter.titleLarge, size: 22, weight: FontWeight.w600, height: 1.3),
+      titleMedium: sans(inter.titleMedium, size: 18, weight: FontWeight.w600, height: 1.4),
+      titleSmall: sans(inter.titleSmall, size: 16, weight: FontWeight.w600, height: 1.4, letterSpacing: 0.05),
+      // Body — Inter, weight 400
+      bodyLarge: sans(inter.bodyLarge, size: 16, height: 1.55),
+      bodyMedium: sans(inter.bodyMedium, size: 14, height: 1.55),
+      bodySmall: sans(inter.bodySmall, size: 13, height: 1.5),
+      // Label — Inter, weight 500/600
+      labelLarge: sans(inter.labelLarge, size: 14, weight: FontWeight.w600, letterSpacing: 0.1),
+      labelMedium: sans(inter.labelMedium, size: 13, weight: FontWeight.w600, letterSpacing: 0.5),
+      labelSmall: sans(inter.labelSmall, size: 12, weight: FontWeight.w600, letterSpacing: 0.5),
     );
   }
 }
 
-extension LabPaletteBuildContext on BuildContext {
-  LabPalette get palette => Theme.of(this).extension<LabPalette>()!;
+extension ClaudePaletteBuildContext on BuildContext {
+  ClaudePalette get palette => Theme.of(this).extension<ClaudePalette>()!;
 }
