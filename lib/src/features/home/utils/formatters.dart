@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../models/caffeine_profile.dart';
+import '../../../models/drink_item.dart';
 import '../../../models/intake_record.dart';
 
 String displayNameForRecord(AppLocalizations l10n, IntakeRecord record) {
@@ -39,6 +40,10 @@ String localizedDrinkName(AppLocalizations l10n, String id) {
     default:
       return id;
   }
+}
+
+String displayNameForDrink(AppLocalizations l10n, DrinkItem drink) {
+  return drink.customName ?? localizedDrinkName(l10n, drink.id);
 }
 
 String localizedLiverStatus(AppLocalizations l10n, LiverStatus status) {

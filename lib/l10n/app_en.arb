@@ -23,7 +23,7 @@
   "halfLifeLabel": "Half-life",
   "budgetRemainingLabel": "Remaining",
   "projectedAtSleepLabel": "At Bedtime",
-  "recentSamplesLabel": "Today's Intake",
+  "recentSamplesLabel": "Intake Records",
   "noRecordsTitle": "No records yet",
   "noRecordsBody": "Record your first drink to start tracking.",
   "riskLowBody": "Your caffeine level will be low by bedtime. Sleep easy tonight.",
@@ -152,5 +152,12 @@
   "importFailureMessage": "Import failed — invalid data",
   "clearDataConfirmTitle": "Clear all data?",
   "clearDataConfirmBody": "This will delete all records and reset your profile. This cannot be undone.",
-  "clearDataConfirmButton": "Clear all"
+  "presetUpdatedMessage": "Preset updated",
+  "clearDataConfirmButton": "Clear all",
+  "manageDrinksLabel": "Manage Drinks",
+  "volumeLabel": "Volume (ml)",
+  "resetLabel": "Reset",
+  "resetPresetConfirmTitle": "Reset to default?",
+  "resetPresetConfirmBody": "This will restore the default caffeine amount and volume.",
+  "resetAllPresetsButton": "Reset All"
 }

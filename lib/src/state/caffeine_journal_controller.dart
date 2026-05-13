@@ -15,7 +15,7 @@ class CaffeineJournalController extends ChangeNotifier {
   final LocalStorageService _storage;
   final _exchange = DataExchangeService();
 
-  final List<DrinkItem> availableDrinks = const [
+  static const List<DrinkItem> defaultDrinks = [
     DrinkItem(
       id: 'americano',
       category: DrinkCategory.coffee,
@@ -109,12 +109,15 @@ class CaffeineJournalController extends ChangeNotifier {
     ),
   ];
 
+  List<DrinkItem> _availableDrinks = [];
+  Map<String, DrinkItem> _drinkPresets = {};
   int _selectedTab = 0;
   int _whatIfDoseMg = 120;
   CaffeineProfile _profile = CaffeineProfile.defaults();
   List<IntakeRecord> _records = const [];
   Timer? _refreshTicker;
 
+  List<DrinkItem> get availableDrinks => List.unmodifiable(_availableDrinks);
   int get selectedTab => _selectedTab;
   int get whatIfDoseMg => _whatIfDoseMg;
   CaffeineProfile get profile => _profile;
@@ -122,6 +125,9 @@ class CaffeineJournalController extends ChangeNotifier {
 
   Future<void> load() async {
     _profile = await _storage.loadProfile() ?? CaffeineProfile.defaults();
+
+    _drinkPresets = await _storage.loadDrinkPresets();
+    _availableDrinks = _applyPresets(defaultDrinks, _drinkPresets);
 
     final storedRecords = await _storage.loadRecords();
     _records = _sortRecords(storedRecords);
@@ -164,15 +170,48 @@ class CaffeineJournalController extends ChangeNotifier {
     await _storage.saveProfile(_profile);
   }
 
-  Future<void> addDrink(DrinkItem drink, DateTime consumedAt) async {
+  Future<void> updateDrinkPreset(DrinkItem drink) async {
+    _drinkPresets[drink.id] = drink;
+    _availableDrinks = _applyPresets(defaultDrinks, _drinkPresets);
+    notifyListeners();
+    await _storage.saveDrinkPresets(_drinkPresets);
+  }
+
+  Future<void> resetDrinkPreset(String id) async {
+    if (!_drinkPresets.containsKey(id)) return;
+    _drinkPresets.remove(id);
+    _availableDrinks = _applyPresets(defaultDrinks, _drinkPresets);
+    notifyListeners();
+    await _storage.saveDrinkPresets(_drinkPresets);
+  }
+
+  Future<void> resetAllDrinkPresets() async {
+    if (_drinkPresets.isEmpty) return;
+    _drinkPresets = {};
+    _availableDrinks = _applyPresets(defaultDrinks, _drinkPresets);
+    notifyListeners();
+    await _storage.saveDrinkPresets(_drinkPresets);
+  }
+
+  bool isPresetModified(String id) => _drinkPresets.containsKey(id);
+
+  bool get hasAnyPresets => _drinkPresets.isNotEmpty;
+
+  Future<void> addDrink(
+    DrinkItem drink,
+    DateTime consumedAt, {
+    String? customName,
+    int? customCaffeineMg,
+  }) async {
     final now = DateTime.now();
     final nextRecord = IntakeRecord(
       id: _createId(now),
       consumedAt: consumedAt,
       loggedAt: now,
-      caffeineAmountMg: drink.caffeineMg,
+      caffeineAmountMg: customCaffeineMg ?? drink.caffeineMg,
       emoji: drink.emoji,
       sourceDrinkId: drink.id,
+      customName: customName,
     );
 
     _records = _sortRecords([..._records, nextRecord]);
@@ -220,6 +259,19 @@ class CaffeineJournalController extends ChangeNotifier {
     final sorted = [...input]
       ..sort((left, right) => right.consumedAt.compareTo(left.consumedAt));
     return List.unmodifiable(sorted);
+  }
+
+  List<DrinkItem> _applyPresets(List<DrinkItem> defaults, Map<String, DrinkItem> presets) {
+    return defaults.map((drink) {
+      final preset = presets[drink.id];
+      if (preset == null) return drink;
+      return drink.copyWith(
+        caffeineMg: preset.caffeineMg,
+        volumeMl: preset.volumeMl,
+        emoji: preset.emoji,
+        customName: preset.customName,
+      );
+    }).toList(growable: false);
   }
 
   Future<void> loadDemoData() async {
@@ -332,9 +384,12 @@ class CaffeineJournalController extends ChangeNotifier {
   Future<void> clearAllData() async {
     _records = const [];
     _profile = CaffeineProfile.defaults();
+    _drinkPresets = {};
+    _availableDrinks = _applyPresets(defaultDrinks, _drinkPresets);
     notifyListeners();
     await _storage.saveRecords(_records);
     await _storage.saveProfile(_profile);
+    await _storage.saveDrinkPresets(_drinkPresets);
   }
 
   String _createId(DateTime timestamp) {

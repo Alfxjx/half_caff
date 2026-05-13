@@ -23,7 +23,7 @@
   "halfLifeLabel": "半衰期",
   "budgetRemainingLabel": "还可摄入",
   "projectedAtSleepLabel": "睡前预估",
-  "recentSamplesLabel": "今日摄入",
+  "recentSamplesLabel": "摄入记录",
   "noRecordsTitle": "暂无记录",
   "noRecordsBody": "记录第一杯饮品，开始追踪咖啡因代谢。",
   "riskLowBody": "睡前咖啡因水平较低，今晚可以安心入睡。",
@@ -152,5 +152,12 @@
   "importFailureMessage": "导入失败，数据格式无效",
   "clearDataConfirmTitle": "清空所有数据？",
   "clearDataConfirmBody": "这将删除所有记录并重置个人档案。此操作无法撤销。",
-  "clearDataConfirmButton": "全部清空"
+  "presetUpdatedMessage": "预设已更新",
+  "clearDataConfirmButton": "全部清空",
+  "manageDrinksLabel": "管理饮品",
+  "volumeLabel": "容量 (ml)",
+  "resetLabel": "重置",
+  "resetPresetConfirmTitle": "重置为默认值？",
+  "resetPresetConfirmBody": "这将恢复该饮品的默认咖啡因含量和容量。",
+  "resetAllPresetsButton": "重置全部"
 }

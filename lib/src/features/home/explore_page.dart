@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../features/explore/drink_encyclopedia_page.dart';
+import '../../features/explore/drink_preset_manager_page.dart';
 import '../../features/explore/factors_page.dart';
 import '../../features/explore/formula_page.dart';
 import '../../features/explore/half_life_table_page.dart';
@@ -9,6 +10,7 @@ import '../../features/explore/literature_page.dart';
 import '../../features/explore/metabolism_pathway_page.dart';
 import '../../features/explore/multi_dose_simulator_page.dart';
 import '../../features/explore/single_dose_calculator_page.dart';
+import '../../models/drink_item.dart';
 import '../../state/caffeine_journal_controller.dart';
 import '../../theme/app_theme.dart';
 import 'widgets/section_header.dart';
@@ -22,6 +24,21 @@ class ExplorePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.palette;
+    final drinks = controller.availableDrinks;
+
+    final categoryCounts = <DrinkCategory, int>{};
+    for (final drink in drinks) {
+      categoryCounts[drink.category] = (categoryCounts[drink.category] ?? 0) + 1;
+    }
+
+    final categories = [
+      (DrinkCategory.coffee, l10n.coffeeCategory, 'Espresso · Americano · Latte · Cold Brew'),
+      (DrinkCategory.tea, l10n.teaCategory, 'Black Tea · Green Tea · Matcha · Oolong'),
+      (DrinkCategory.soda, l10n.sodaCategory, 'Cola · Diet Cola'),
+      (DrinkCategory.energy, l10n.energyCategory, 'Red Bull · Monster'),
+      (DrinkCategory.supplement, l10n.supplementCategory, 'Caffeine Pill · Pre-workout'),
+      (DrinkCategory.food, l10n.foodCategory, 'Dark Chocolate · Milk Chocolate'),
+    ];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
@@ -120,14 +137,45 @@ class ExplorePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.referenceTableTitle, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                Row(
+                  children: [
+                    Text(
+                      l10n.referenceTableTitle,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DrinkPresetManagerPage(controller: controller),
+                        ),
+                      ),
+                      child: Text(l10n.manageDrinksLabel),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
-                _ReferenceRow(label: l10n.coffeeCategory, count: '15', examples: 'Espresso · Americano · Latte · Cold Brew'),
-                _ReferenceRow(label: l10n.teaCategory, count: '4', examples: 'Black Tea · Green Tea · Matcha · Oolong'),
-                _ReferenceRow(label: l10n.sodaCategory, count: '2', examples: 'Cola · Diet Cola'),
-                _ReferenceRow(label: l10n.energyCategory, count: '2', examples: 'Red Bull · Monster'),
-                _ReferenceRow(label: l10n.supplementCategory, count: '2', examples: 'Caffeine Pill · Pre-workout'),
-                _ReferenceRow(label: l10n.foodCategory, count: '2', examples: 'Dark Chocolate · Milk Chocolate', isLast: true),
+                ...categories.map((entry) {
+                  final (category, label, examples) = entry;
+                  final count = categoryCounts[category] ?? 0;
+                  final isLast = category == categories.last.$1;
+                  return _ReferenceRow(
+                    label: label,
+                    count: count.toString(),
+                    examples: examples,
+                    isLast: isLast,
+                    onTap: count > 0
+                        ? () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => DrinkPresetManagerPage(
+                                  controller: controller,
+                                  initialCategory: category,
+                                ),
+                              ),
+                            )
+                        : null,
+                  );
+                }),
               ],
             ),
           ),
@@ -293,17 +341,19 @@ class _ReferenceRow extends StatelessWidget {
     required this.count,
     required this.examples,
     this.isLast = false,
+    this.onTap,
   });
 
   final String label;
   final String count;
   final String examples;
   final bool isLast;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    return Container(
+    final child = Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         border: isLast ? null : Border(bottom: BorderSide(color: palette.hairline)),
@@ -328,8 +378,18 @@ class _ReferenceRow extends StatelessWidget {
           Expanded(
             child: Text(examples, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted)),
           ),
+          if (onTap != null)
+            Icon(Icons.chevron_right, size: 16, color: palette.muted),
         ],
       ),
+    );
+
+    if (onTap == null) return child;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: child,
     );
   }
 }

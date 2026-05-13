@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/caffeine_profile.dart';
+import '../models/drink_item.dart';
 import '../models/intake_record.dart';
 
 class LocalStorageService {
@@ -10,6 +11,7 @@ class LocalStorageService {
   static const _localeKey = 'app.locale';
   static const _profileKey = 'journal.profile';
   static const _recordsKey = 'journal.records';
+  static const _drinkPresetsKey = 'journal.drinkPresets';
 
   Future<SharedPreferences> get _prefs async => SharedPreferences.getInstance();
 
@@ -66,5 +68,19 @@ class LocalStorageService {
   Future<void> saveRecords(List<IntakeRecord> records) async {
     final payload = records.map((record) => record.toJson()).toList();
     await (await _prefs).setString(_recordsKey, jsonEncode(payload));
+  }
+
+  Future<Map<String, DrinkItem>> loadDrinkPresets() async {
+    final raw = (await _prefs).getString(_drinkPresetsKey);
+    if (raw == null || raw.isEmpty) {
+      return {};
+    }
+    final data = jsonDecode(raw) as Map<String, dynamic>;
+    return data.map((key, value) => MapEntry(key, DrinkItem.fromJson(value as Map<String, dynamic>)));
+  }
+
+  Future<void> saveDrinkPresets(Map<String, DrinkItem> presets) async {
+    final payload = presets.map((key, value) => MapEntry(key, value.toJson()));
+    await (await _prefs).setString(_drinkPresetsKey, jsonEncode(payload));
   }
 }

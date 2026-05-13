@@ -1,29 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../models/intake_record.dart';
 import '../../services/caffeine_calculator.dart';
 import '../../state/caffeine_journal_controller.dart';
 import '../../theme/app_theme.dart';
+import 'record_editor_sheet.dart';
+import 'utils/formatters.dart';
 import 'widgets/empty_card.dart';
-import 'widgets/record_list_item.dart';
 import 'widgets/section_header.dart';
 
-class DashboardPage extends StatelessWidget {
+enum RecordHistoryFilter { all, today, week }
+
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, required this.controller});
 
   final CaffeineJournalController controller;
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  RecordHistoryFilter _historyFilter = RecordHistoryFilter.today;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final insights = CaffeineCalculator.buildInsights(
-      controller.records,
-      controller.profile,
+      widget.controller.records,
+      widget.controller.profile,
       now,
     );
     final progress = (insights.currentAmountMg / 220).clamp(0.0, 1.0);
-    final recentRecords = controller.records.take(5).toList(growable: false);
+    final records = _filteredRecords(widget.controller.records);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 120),
@@ -44,22 +55,102 @@ class DashboardPage extends StatelessWidget {
           const SizedBox(height: 32),
           SectionHeader(label: l10n.recentSamplesLabel),
           const SizedBox(height: 16),
-          if (recentRecords.isEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ChoiceChip(
+                label: Text(l10n.recordFilterAll),
+                selected: _historyFilter == RecordHistoryFilter.all,
+                onSelected: (_) => setState(() => _historyFilter = RecordHistoryFilter.all),
+              ),
+              ChoiceChip(
+                label: Text(l10n.recordFilterToday),
+                selected: _historyFilter == RecordHistoryFilter.today,
+                onSelected: (_) => setState(() => _historyFilter = RecordHistoryFilter.today),
+              ),
+              ChoiceChip(
+                label: Text(l10n.recordFilterWeek),
+                selected: _historyFilter == RecordHistoryFilter.week,
+                onSelected: (_) => setState(() => _historyFilter = RecordHistoryFilter.week),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (records.isEmpty)
             EmptyCard(title: l10n.noRecordsTitle, body: l10n.noRecordsBody)
           else
-            ...recentRecords.asMap().entries.map((entry) {
+            ...records.asMap().entries.map((entry) {
+              final record = entry.value;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: RecordListItem(
-                  record: entry.value,
-                  index: entry.key,
-                  l10n: l10n,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.palette.surfaceCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: context.palette.hairline.withOpacity(0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: context.palette.surfaceCreamStrong,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(record.emoji, style: const TextStyle(fontSize: 22)),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              displayNameForRecord(l10n, record),
+                              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${formatDateTime(context, record.consumedAt)} · ${record.caffeineAmountMg}mg',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: context.palette.muted),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => showRecordEditorSheet(context, widget.controller, existingRecord: record),
+                        icon: const Icon(Icons.edit_outlined, size: 20),
+                        tooltip: l10n.editRecordTooltip,
+                      ),
+                      IconButton(
+                        onPressed: () => showDeleteConfirmation(context, widget.controller, record),
+                        icon: Icon(Icons.delete_outline, size: 20, color: context.palette.error),
+                        tooltip: l10n.deleteRecordTooltip,
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
         ],
       ),
     );
+  }
+
+  List<IntakeRecord> _filteredRecords(List<IntakeRecord> records) {
+    final now = DateTime.now();
+    switch (_historyFilter) {
+      case RecordHistoryFilter.all:
+        return records;
+      case RecordHistoryFilter.today:
+        return records.where((r) => r.consumedAt.year == now.year && r.consumedAt.month == now.month && r.consumedAt.day == now.day).toList();
+      case RecordHistoryFilter.week:
+        final cutoff = now.subtract(const Duration(days: 7));
+        return records.where((r) => !r.consumedAt.isBefore(cutoff)).toList();
+    }
   }
 }
 

@@ -7,7 +7,7 @@ import '../../theme/app_theme.dart';
 import 'dashboard_page.dart';
 import 'explore_page.dart';
 import 'profile_page.dart';
-import 'record_page.dart';
+import 'record_action_sheet.dart';
 import 'timeline_page.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -29,7 +29,6 @@ class HomeScreen extends StatelessWidget {
         final pages = [
           DashboardPage(controller: journalController),
           TimelinePage(controller: journalController),
-          RecordPage(controller: journalController),
           ExplorePage(controller: journalController),
           ProfilePage(controller: journalController),
         ];
@@ -52,6 +51,10 @@ class HomeScreen extends StatelessWidget {
               children: pages,
             ),
           ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => showRecordActionSheet(context, journalController),
+            child: const Icon(Icons.add),
+          ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: journalController.selectedTab,
             onDestinationSelected: journalController.selectTab,
@@ -65,11 +68,6 @@ class HomeScreen extends StatelessWidget {
                 icon: const Icon(Icons.show_chart_outlined),
                 selectedIcon: const Icon(Icons.show_chart),
                 label: l10n.timelineTab,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.edit_note_outlined),
-                selectedIcon: const Icon(Icons.edit_note),
-                label: l10n.recordTab,
               ),
               NavigationDestination(
                 icon: const Icon(Icons.auto_stories_outlined),
@@ -190,10 +188,8 @@ class _AppBarTitle extends StatelessWidget {
       case 1:
         return l10n.timelineTab;
       case 2:
-        return l10n.recordTab;
-      case 3:
         return l10n.exploreTab;
-      case 4:
+      case 3:
         return l10n.profileTab;
       default:
         return '';
