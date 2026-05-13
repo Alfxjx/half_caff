@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../models/drink_item.dart';
 import '../../state/caffeine_journal_controller.dart';
-import '../../theme/app_theme.dart';
 import 'record_editor_sheet.dart';
 import 'utils/formatters.dart';
 
@@ -47,11 +47,13 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _showPresetEditSheet(BuildContext context, DrinkItem drink) async {
+  Future<void> _showPresetEditSheet(
+      BuildContext context, DrinkItem drink) async {
     final l10n = AppLocalizations.of(context)!;
     final defaultName = displayNameForDrink(l10n, drink);
     final nameController = TextEditingController(text: defaultName);
-    final amountController = TextEditingController(text: drink.caffeineMg.toString());
+    final amountController =
+        TextEditingController(text: drink.caffeineMg.toString());
 
     await showModalBottomSheet<void>(
       context: context,
@@ -60,7 +62,8 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+            padding: EdgeInsets.fromLTRB(
+                20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +81,8 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
                 TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: l10n.caffeineAmountLabel),
+                  decoration:
+                      InputDecoration(labelText: l10n.caffeineAmountLabel),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -91,8 +95,10 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
                     FilledButton(
                       onPressed: () async {
                         final name = nameController.text.trim();
-                        final amount = int.tryParse(amountController.text.trim());
-                        if (name.isEmpty || amount == null || amount <= 0) return;
+                        final amount =
+                            int.tryParse(amountController.text.trim());
+                        if (name.isEmpty || amount == null || amount <= 0)
+                          return;
                         final shouldClearCustomName = name == defaultName;
                         await widget.controller.updateDrinkPreset(
                           drink.copyWith(
@@ -151,7 +157,8 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
                 crossAxisCount: MediaQuery.of(context).size.width > 420 ? 4 : 2,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
-                childAspectRatio: MediaQuery.of(context).size.width > 420 ? 0.85 : 1.1,
+                childAspectRatio:
+                    MediaQuery.of(context).size.width > 420 ? 0.85 : 1.1,
               ),
               itemCount: widget.controller.availableDrinks.length,
               itemBuilder: (context, index) {
@@ -230,7 +237,10 @@ class _DrinkTile extends StatelessWidget {
             const Spacer(),
             Text(
               name,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -238,9 +248,9 @@ class _DrinkTile extends StatelessWidget {
             Text(
               caffeine,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: palette.primary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+                color: palette.primary,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ],
         ),

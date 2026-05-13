@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../models/drink_item.dart';
 import '../../state/caffeine_journal_controller.dart';
-import '../../theme/app_theme.dart';
 import '../home/utils/formatters.dart';
 
 class DrinkPresetManagerPage extends StatefulWidget {
@@ -73,8 +73,10 @@ class _DrinkPresetManagerPageState extends State<DrinkPresetManagerPage> {
     final nameController = TextEditingController(
       text: drink.customName ?? displayNameForDrink(l10n, drink),
     );
-    final amountController = TextEditingController(text: drink.caffeineMg.toString());
-    final volumeController = TextEditingController(text: drink.volumeMl.toString());
+    final amountController =
+        TextEditingController(text: drink.caffeineMg.toString());
+    final volumeController =
+        TextEditingController(text: drink.volumeMl.toString());
 
     await showModalBottomSheet<void>(
       context: context,
@@ -106,7 +108,8 @@ class _DrinkPresetManagerPageState extends State<DrinkPresetManagerPage> {
                 TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: l10n.caffeineAmountLabel),
+                  decoration:
+                      InputDecoration(labelText: l10n.caffeineAmountLabel),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -132,11 +135,13 @@ class _DrinkPresetManagerPageState extends State<DrinkPresetManagerPage> {
                               content: Text(l10n.resetPresetConfirmBody),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(false),
                                   child: Text(l10n.cancelLabel),
                                 ),
                                 FilledButton(
-                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(true),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: context.palette.error,
                                     foregroundColor: context.palette.onPrimary,
@@ -156,9 +161,15 @@ class _DrinkPresetManagerPageState extends State<DrinkPresetManagerPage> {
                     FilledButton(
                       onPressed: () async {
                         final name = nameController.text.trim();
-                        final amount = int.tryParse(amountController.text.trim());
-                        final volume = int.tryParse(volumeController.text.trim());
-                        if (name.isEmpty || amount == null || amount <= 0 || volume == null || volume <= 0) {
+                        final amount =
+                            int.tryParse(amountController.text.trim());
+                        final volume =
+                            int.tryParse(volumeController.text.trim());
+                        if (name.isEmpty ||
+                            amount == null ||
+                            amount <= 0 ||
+                            volume == null ||
+                            volume <= 0) {
                           return;
                         }
                         final shouldClearCustomName = name == defaultName;
@@ -292,7 +303,8 @@ class _DrinkPresetManagerPageState extends State<DrinkPresetManagerPage> {
                         color: palette.surfaceCreamStrong,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Text(drink.emoji, style: const TextStyle(fontSize: 18)),
+                      child: Text(drink.emoji,
+                          style: const TextStyle(fontSize: 18)),
                     ),
                     title: Text(
                       displayNameForDrink(l10n, drink),
@@ -303,9 +315,9 @@ class _DrinkPresetManagerPageState extends State<DrinkPresetManagerPage> {
                     subtitle: Text(
                       '${drink.caffeineMg}mg · ${drink.volumeMl}ml',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: palette.primary,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
+                        color: palette.primary,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -320,7 +332,8 @@ class _DrinkPresetManagerPageState extends State<DrinkPresetManagerPage> {
                             ),
                           ),
                         const SizedBox(width: 8),
-                        Icon(Icons.edit_outlined, size: 18, color: palette.muted),
+                        Icon(Icons.edit_outlined,
+                            size: 18, color: palette.muted),
                       ],
                     ),
                     onTap: () => _showEditSheet(context, drink),

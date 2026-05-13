@@ -63,10 +63,10 @@ class RecordListItem extends StatelessWidget {
           Text(
             '+${record.caffeineAmountMg}mg',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: palette.primary,
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+              color: palette.primary,
+              fontWeight: FontWeight.w700,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ],
       ),

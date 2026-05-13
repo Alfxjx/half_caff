@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../models/intake_record.dart';
 import '../../state/caffeine_journal_controller.dart';
-import '../../theme/app_theme.dart';
 import 'utils/formatters.dart';
 
 Future<void> showRecordEditorSheet(
@@ -30,22 +30,29 @@ Future<void> showRecordEditorSheet(
         builder: (context, setModalState) {
           return SafeArea(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.fromLTRB(
+                  20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isEditing ? l10n.editRecordTitle : l10n.addCustomRecordTitle,
+                    isEditing
+                        ? l10n.editRecordTitle
+                        : l10n.addCustomRecordTitle,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
-                  TextField(controller: nameController, decoration: InputDecoration(labelText: l10n.customNameLabel)),
+                  TextField(
+                      controller: nameController,
+                      decoration:
+                          InputDecoration(labelText: l10n.customNameLabel)),
                   const SizedBox(height: 12),
                   TextField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: l10n.caffeineAmountLabel),
+                    decoration:
+                        InputDecoration(labelText: l10n.caffeineAmountLabel),
                   ),
                   const SizedBox(height: 12),
                   ListTile(
@@ -56,7 +63,8 @@ Future<void> showRecordEditorSheet(
                     onTap: () async {
                       final date = await showDatePicker(
                         context: context,
-                        firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                        firstDate:
+                            DateTime.now().subtract(const Duration(days: 30)),
                         lastDate: DateTime.now().add(const Duration(days: 1)),
                         initialDate: consumedAt,
                       );
@@ -67,28 +75,40 @@ Future<void> showRecordEditorSheet(
                       );
                       if (time == null) return;
                       setModalState(() {
-                        consumedAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                        consumedAt = DateTime(date.year, date.month, date.day,
+                            time.hour, time.minute);
                       });
                     },
                   ),
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.cancelLabel)),
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(l10n.cancelLabel)),
                       const Spacer(),
                       FilledButton(
                         onPressed: () async {
                           final name = nameController.text.trim();
-                          final amount = int.tryParse(amountController.text.trim());
-                          if (name.isEmpty || amount == null || amount <= 0) return;
+                          final amount =
+                              int.tryParse(amountController.text.trim());
+                          if (name.isEmpty || amount == null || amount <= 0)
+                            return;
                           if (existingRecord == null) {
-                            await controller.addCustomRecord(name: name, caffeineAmountMg: amount, consumedAt: consumedAt);
+                            await controller.addCustomRecord(
+                                name: name,
+                                caffeineAmountMg: amount,
+                                consumedAt: consumedAt);
                           } else {
-                            final canonicalName = existingRecord.sourceDrinkId == null
-                                ? null
-                                : localizedDrinkName(l10n, existingRecord.sourceDrinkId!);
-                            final shouldClearCustomName = canonicalName != null && name == canonicalName;
-                            await controller.updateRecord(existingRecord.copyWith(
+                            final canonicalName =
+                                existingRecord.sourceDrinkId == null
+                                    ? null
+                                    : localizedDrinkName(
+                                        l10n, existingRecord.sourceDrinkId!);
+                            final shouldClearCustomName =
+                                canonicalName != null && name == canonicalName;
+                            await controller
+                                .updateRecord(existingRecord.copyWith(
                               consumedAt: consumedAt,
                               caffeineAmountMg: amount,
                               customName: shouldClearCustomName ? null : name,
@@ -98,7 +118,8 @@ Future<void> showRecordEditorSheet(
                           if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
-                        child: Text(isEditing ? l10n.updateLabel : l10n.saveLabel),
+                        child:
+                            Text(isEditing ? l10n.updateLabel : l10n.saveLabel),
                       ),
                     ],
                   ),
@@ -126,7 +147,9 @@ Future<void> showDeleteConfirmation(
       title: Text(l10n.deleteRecordTitle),
       content: Text(l10n.deleteRecordBody(displayNameForRecord(l10n, record))),
       actions: [
-        TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancelLabel)),
+        TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancelLabel)),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
           style: FilledButton.styleFrom(

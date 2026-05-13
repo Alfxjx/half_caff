@@ -64,7 +64,10 @@ class HalfLifeTablePage extends StatelessWidget {
                         DataColumn(
                           label: Text(
                             '代谢类型',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                                   color: p.onDark,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -73,7 +76,10 @@ class HalfLifeTablePage extends StatelessWidget {
                         DataColumn(
                           label: Text(
                             '代表人群',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                                   color: p.onDark,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -83,7 +89,10 @@ class HalfLifeTablePage extends StatelessWidget {
                           numeric: true,
                           label: Text(
                             't₁/₂ (h)',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                                   color: p.onDark,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -93,7 +102,10 @@ class HalfLifeTablePage extends StatelessWidget {
                           numeric: true,
                           label: Text(
                             'ke (h⁻¹)',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                                   color: p.onDark,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -103,7 +115,10 @@ class HalfLifeTablePage extends StatelessWidget {
                           numeric: true,
                           label: Text(
                             '1h后',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                                   color: p.onDark,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -113,7 +128,10 @@ class HalfLifeTablePage extends StatelessWidget {
                           numeric: true,
                           label: Text(
                             '4h后',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                                   color: p.onDark,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -123,7 +141,10 @@ class HalfLifeTablePage extends StatelessWidget {
                           numeric: true,
                           label: Text(
                             '8h后',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
                                   color: p.onDark,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -146,7 +167,10 @@ class HalfLifeTablePage extends StatelessWidget {
                             DataCell(
                               Text(
                                 row.type,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
                                       fontWeight: FontWeight.w600,
                                     ),
                               ),
@@ -154,7 +178,10 @@ class HalfLifeTablePage extends StatelessWidget {
                             DataCell(
                               Text(
                                 row.population,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
                                       color: p.muted,
                                     ),
                               ),
@@ -163,47 +190,72 @@ class HalfLifeTablePage extends StatelessWidget {
                               Text(
                                 '${row.halfLifeHours}h',
                                 textAlign: TextAlign.right,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: p.primary,
-                                      fontFeatures: const [FontFeature.tabularFigures()],
-                                    ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: p.primary,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
                               ),
                             ),
                             DataCell(
                               Text(
                                 ke.toStringAsFixed(4),
                                 textAlign: TextAlign.right,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      fontFeatures: const [FontFeature.tabularFigures()],
-                                    ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
                               ),
                             ),
                             DataCell(
                               Text(
                                 '${r1.toStringAsFixed(1)}%',
                                 textAlign: TextAlign.right,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      fontFeatures: const [FontFeature.tabularFigures()],
-                                    ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
                               ),
                             ),
                             DataCell(
                               Text(
                                 '${r4.toStringAsFixed(1)}%',
                                 textAlign: TextAlign.right,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      fontFeatures: const [FontFeature.tabularFigures()],
-                                    ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
                               ),
                             ),
                             DataCell(
                               Text(
                                 '${r8.toStringAsFixed(1)}%',
                                 textAlign: TextAlign.right,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      fontFeatures: const [FontFeature.tabularFigures()],
-                                    ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures()
+                                  ],
+                                ),
                               ),
                             ),
                           ],

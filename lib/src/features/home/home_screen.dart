@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../app/app_controller.dart';
 import '../../state/caffeine_journal_controller.dart';
-import '../../theme/app_theme.dart';
 import 'dashboard_page.dart';
 import 'explore_page.dart';
 import 'profile_page.dart';
@@ -37,7 +37,8 @@ class HomeScreen extends StatelessWidget {
           backgroundColor: context.palette.canvas,
           appBar: AppBar(
             toolbarHeight: 64,
-            title: _AppBarTitle(l10n: l10n, selectedIndex: journalController.selectedTab),
+            title: _AppBarTitle(
+                l10n: l10n, selectedIndex: journalController.selectedTab),
             actions: [
               _SettingsButton(
                 onPressed: () => _openSettingsSheet(context, l10n),
@@ -98,16 +99,21 @@ class HomeScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.settingsTitle, style: Theme.of(sheetContext).textTheme.titleLarge),
+                Text(l10n.settingsTitle,
+                    style: Theme.of(sheetContext).textTheme.titleLarge),
                 const SizedBox(height: 20),
-                Text(l10n.themeModeLabel, style: Theme.of(sheetContext).textTheme.titleSmall),
+                Text(l10n.themeModeLabel,
+                    style: Theme.of(sheetContext).textTheme.titleSmall),
                 const SizedBox(height: 10),
                 SegmentedButton<ThemeMode>(
                   showSelectedIcon: false,
                   segments: [
-                    ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem)),
-                    ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight)),
-                    ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark)),
+                    ButtonSegment(
+                        value: ThemeMode.system, label: Text(l10n.themeSystem)),
+                    ButtonSegment(
+                        value: ThemeMode.light, label: Text(l10n.themeLight)),
+                    ButtonSegment(
+                        value: ThemeMode.dark, label: Text(l10n.themeDark)),
                   ],
                   selected: {appController.themeMode},
                   onSelectionChanged: (selection) {
@@ -115,15 +121,22 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 24),
-                Text(l10n.languageLabel, style: Theme.of(sheetContext).textTheme.titleSmall),
+                Text(l10n.languageLabel,
+                    style: Theme.of(sheetContext).textTheme.titleSmall),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: appController.localeTag,
                   items: [
-                    DropdownMenuItem(value: 'system', child: Text(l10n.languageSystem)),
-                    DropdownMenuItem(value: 'en', child: Text(l10n.languageEnglish)),
-                    DropdownMenuItem(value: 'zh', child: Text(l10n.languageSimplifiedChinese)),
-                    DropdownMenuItem(value: 'zh-Hant', child: Text(l10n.languageTraditionalChinese)),
+                    DropdownMenuItem(
+                        value: 'system', child: Text(l10n.languageSystem)),
+                    DropdownMenuItem(
+                        value: 'en', child: Text(l10n.languageEnglish)),
+                    DropdownMenuItem(
+                        value: 'zh',
+                        child: Text(l10n.languageSimplifiedChinese)),
+                    DropdownMenuItem(
+                        value: 'zh-Hant',
+                        child: Text(l10n.languageTraditionalChinese)),
                   ],
                   onChanged: (value) {
                     if (value != null) appController.setLocaleTag(value);

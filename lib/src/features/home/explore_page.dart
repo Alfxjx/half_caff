@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../features/explore/drink_encyclopedia_page.dart';
@@ -12,7 +13,6 @@ import '../../features/explore/multi_dose_simulator_page.dart';
 import '../../features/explore/single_dose_calculator_page.dart';
 import '../../models/drink_item.dart';
 import '../../state/caffeine_journal_controller.dart';
-import '../../theme/app_theme.dart';
 import 'widgets/section_header.dart';
 
 class ExplorePage extends StatelessWidget {
@@ -28,16 +28,33 @@ class ExplorePage extends StatelessWidget {
 
     final categoryCounts = <DrinkCategory, int>{};
     for (final drink in drinks) {
-      categoryCounts[drink.category] = (categoryCounts[drink.category] ?? 0) + 1;
+      categoryCounts[drink.category] =
+          (categoryCounts[drink.category] ?? 0) + 1;
     }
 
     final categories = [
-      (DrinkCategory.coffee, l10n.coffeeCategory, 'Espresso · Americano · Latte · Cold Brew'),
-      (DrinkCategory.tea, l10n.teaCategory, 'Black Tea · Green Tea · Matcha · Oolong'),
+      (
+        DrinkCategory.coffee,
+        l10n.coffeeCategory,
+        'Espresso · Americano · Latte · Cold Brew'
+      ),
+      (
+        DrinkCategory.tea,
+        l10n.teaCategory,
+        'Black Tea · Green Tea · Matcha · Oolong'
+      ),
       (DrinkCategory.soda, l10n.sodaCategory, 'Cola · Diet Cola'),
       (DrinkCategory.energy, l10n.energyCategory, 'Red Bull · Monster'),
-      (DrinkCategory.supplement, l10n.supplementCategory, 'Caffeine Pill · Pre-workout'),
-      (DrinkCategory.food, l10n.foodCategory, 'Dark Chocolate · Milk Chocolate'),
+      (
+        DrinkCategory.supplement,
+        l10n.supplementCategory,
+        'Caffeine Pill · Pre-workout'
+      ),
+      (
+        DrinkCategory.food,
+        l10n.foodCategory,
+        'Dark Chocolate · Milk Chocolate'
+      ),
     ];
 
     return SingleChildScrollView(
@@ -50,7 +67,9 @@ class ExplorePage extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth > 480;
-              final cardWidth = isWide ? (constraints.maxWidth - 12) / 2 : constraints.maxWidth;
+              final cardWidth = isWide
+                  ? (constraints.maxWidth - 12) / 2
+                  : constraints.maxWidth;
               return Wrap(
                 spacing: 12,
                 runSpacing: 12,
@@ -62,7 +81,8 @@ class ExplorePage extends StatelessWidget {
                       title: l10n.encyclopediaCardTitle,
                       body: l10n.encyclopediaCardBody,
                       onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const DrinkEncyclopediaPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const DrinkEncyclopediaPage()),
                       ),
                     ),
                   ),
@@ -73,7 +93,8 @@ class ExplorePage extends StatelessWidget {
                       title: l10n.metabolismCardTitle,
                       body: l10n.metabolismCardBody,
                       onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const MetabolismPathwayPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const MetabolismPathwayPage()),
                       ),
                     ),
                   ),
@@ -106,7 +127,8 @@ class ExplorePage extends StatelessWidget {
                       title: '单次摄入计算器',
                       body: '模拟单次咖啡因摄入后的体内衰减过程，对比不同代谢速度。',
                       onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const SingleDoseCalculatorPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const SingleDoseCalculatorPage()),
                       ),
                     ),
                   ),
@@ -117,7 +139,8 @@ class ExplorePage extends StatelessWidget {
                       title: '多次摄入模拟器',
                       body: '输入多组摄入时间和剂量，计算24小时内的咖啡因累积效应。',
                       onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const MultiDoseSimulatorPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const MultiDoseSimulatorPage()),
                       ),
                     ),
                   ),
@@ -141,13 +164,17 @@ class ExplorePage extends StatelessWidget {
                   children: [
                     Text(
                       l10n.referenceTableTitle,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const Spacer(),
                     TextButton(
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => DrinkPresetManagerPage(controller: controller),
+                          builder: (_) =>
+                              DrinkPresetManagerPage(controller: controller),
                         ),
                       ),
                       child: Text(l10n.manageDrinksLabel),
@@ -319,12 +346,18 @@ class _ExploreCard extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
               body,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted, height: 1.5),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: palette.muted, height: 1.5),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -356,27 +389,36 @@ class _ReferenceRow extends StatelessWidget {
     final child = Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: isLast ? null : Border(bottom: BorderSide(color: palette.hairline)),
+        border:
+            isLast ? null : Border(bottom: BorderSide(color: palette.hairline)),
       ),
       child: Row(
         children: [
           SizedBox(
             width: 88,
-            child: Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+            child: Text(label,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600)),
           ),
           SizedBox(
             width: 32,
             child: Text(
               count,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: palette.primary,
-                    fontWeight: FontWeight.w800,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+                color: palette.primary,
+                fontWeight: FontWeight.w800,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ),
           Expanded(
-            child: Text(examples, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted)),
+            child: Text(examples,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: palette.muted)),
           ),
           if (onTap != null)
             Icon(Icons.chevron_right, size: 16, color: palette.muted),
