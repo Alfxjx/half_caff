@@ -60,7 +60,7 @@ class _RecordPageState extends State<RecordPage> {
                     crossAxisCount: MediaQuery.of(context).size.width > 420 ? 4 : 2,
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
-                    childAspectRatio: 1.1,
+                    childAspectRatio: MediaQuery.of(context).size.width > 420 ? 0.85 : 1.1,
                   ),
                   itemCount: widget.controller.availableDrinks.length,
                   itemBuilder: (context, index) {
@@ -358,15 +358,15 @@ class _DrinkTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 32,
+              height: 32,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: palette.surfaceCard,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: palette.hairline.withOpacity(0.5)),
               ),
-              child: Text(emoji, style: const TextStyle(fontSize: 20)),
+              child: Text(emoji, style: const TextStyle(fontSize: 18)),
             ),
             const Spacer(),
             Text(

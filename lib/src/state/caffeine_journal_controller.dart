@@ -72,6 +72,41 @@ class CaffeineJournalController extends ChangeNotifier {
       volumeMl: 250,
       emoji: '⚡',
     ),
+    DrinkItem(
+      id: 'double_espresso',
+      category: DrinkCategory.coffee,
+      caffeineMg: 135,
+      volumeMl: 60,
+      emoji: '☕',
+    ),
+    DrinkItem(
+      id: 'large_drip',
+      category: DrinkCategory.coffee,
+      caffeineMg: 250,
+      volumeMl: 480,
+      emoji: '☕',
+    ),
+    DrinkItem(
+      id: 'large_cold_brew',
+      category: DrinkCategory.coffee,
+      caffeineMg: 300,
+      volumeMl: 480,
+      emoji: '🧊',
+    ),
+    DrinkItem(
+      id: 'instant_coffee',
+      category: DrinkCategory.coffee,
+      caffeineMg: 70,
+      volumeMl: 240,
+      emoji: '🫗',
+    ),
+    DrinkItem(
+      id: 'cappuccino',
+      category: DrinkCategory.coffee,
+      caffeineMg: 75,
+      volumeMl: 350,
+      emoji: '☁️',
+    ),
   ];
 
   int _selectedTab = 0;

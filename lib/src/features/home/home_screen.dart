@@ -150,21 +150,20 @@ class _AppBarTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          '*',
+        const Text(
+          '☕',
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: context.palette.ink,
+            fontSize: 22,
             height: 1,
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         Text(
-          'Claude',
+          'HalfCaff',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: context.palette.ink,
+                letterSpacing: -0.3,
               ),
         ),
         const SizedBox(width: 16),

@@ -26,6 +26,16 @@ String localizedDrinkName(AppLocalizations l10n, String id) {
       return l10n.drinkCola;
     case 'energy_drink':
       return l10n.drinkEnergyDrink;
+    case 'double_espresso':
+      return l10n.drinkDoubleEspresso;
+    case 'large_drip':
+      return l10n.drinkLargeDrip;
+    case 'large_cold_brew':
+      return l10n.drinkLargeColdBrew;
+    case 'instant_coffee':
+      return l10n.drinkInstantCoffee;
+    case 'cappuccino':
+      return l10n.drinkCappuccino;
     default:
       return id;
   }

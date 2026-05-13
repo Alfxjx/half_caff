@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../features/explore/drink_encyclopedia_page.dart';
+import '../../features/explore/factors_page.dart';
+import '../../features/explore/formula_page.dart';
+import '../../features/explore/half_life_table_page.dart';
+import '../../features/explore/literature_page.dart';
+import '../../features/explore/metabolism_pathway_page.dart';
+import '../../features/explore/multi_dose_simulator_page.dart';
+import '../../features/explore/single_dose_calculator_page.dart';
 import '../../state/caffeine_journal_controller.dart';
 import '../../theme/app_theme.dart';
 import 'widgets/section_header.dart';
@@ -32,19 +40,69 @@ class ExplorePage extends StatelessWidget {
                 children: [
                   SizedBox(
                     width: cardWidth,
-                    child: _ExploreCard(emoji: '☕', title: l10n.encyclopediaCardTitle, body: l10n.encyclopediaCardBody),
+                    child: _ExploreCard(
+                      emoji: '☕',
+                      title: l10n.encyclopediaCardTitle,
+                      body: l10n.encyclopediaCardBody,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const DrinkEncyclopediaPage()),
+                      ),
+                    ),
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: _ExploreCard(emoji: '⚗️', title: l10n.metabolismCardTitle, body: l10n.metabolismCardBody),
+                    child: _ExploreCard(
+                      emoji: '⚗️',
+                      title: l10n.metabolismCardTitle,
+                      body: l10n.metabolismCardBody,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const MetabolismPathwayPage()),
+                      ),
+                    ),
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: _ExploreCard(emoji: '∑', title: l10n.formulaCardTitle, body: l10n.formulaCardBody),
+                    child: _ExploreCard(
+                      emoji: '∑',
+                      title: l10n.formulaCardTitle,
+                      body: l10n.formulaCardBody,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const FormulaPage()),
+                      ),
+                    ),
                   ),
                   SizedBox(
                     width: cardWidth,
-                    child: _ExploreCard(emoji: '🧬', title: l10n.factorsCardTitle, body: l10n.factorsCardBody),
+                    child: _ExploreCard(
+                      emoji: '🧬',
+                      title: l10n.factorsCardTitle,
+                      body: l10n.factorsCardBody,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const FactorsPage()),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: _ExploreCard(
+                      emoji: '📊',
+                      title: '单次摄入计算器',
+                      body: '模拟单次咖啡因摄入后的体内衰减过程，对比不同代谢速度。',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SingleDoseCalculatorPage()),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: _ExploreCard(
+                      emoji: '📈',
+                      title: '多次摄入模拟器',
+                      body: '输入多组摄入时间和剂量，计算24小时内的咖啡因累积效应。',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const MultiDoseSimulatorPage()),
+                      ),
+                    ),
                   ),
                 ],
               );
@@ -73,61 +131,157 @@ class ExplorePage extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          _SectionLinkTile(
+            icon: Icons.timer_outlined,
+            title: '个体化半衰期参考值',
+            subtitle: '7 类人群的代谢速度对比',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const HalfLifeTablePage()),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _SectionLinkTile(
+            icon: Icons.menu_book_outlined,
+            title: '关键参考文献',
+            subtitle: '10 篇药代动力学核心文献',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const LiteraturePage()),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _ExploreCard extends StatelessWidget {
-  const _ExploreCard({required this.emoji, required this.title, required this.body});
+class _SectionLinkTile extends StatelessWidget {
+  const _SectionLinkTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
-  final String emoji;
+  final IconData icon;
   final String title;
-  final String body;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: palette.surfaceCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: palette.hairline.withOpacity(0.6)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: palette.surfaceCreamStrong,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(emoji, style: const TextStyle(fontSize: 22)),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: palette.surfaceCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: palette.hairline.withOpacity(0.6)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: palette.surfaceCreamStrong,
+                borderRadius: BorderRadius.circular(10),
               ),
-              const Spacer(),
-              Icon(Icons.arrow_forward, size: 16, color: palette.muted),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            body,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted, height: 1.5),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+              child: Icon(icon, size: 20, color: palette.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: palette.muted,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward, size: 16, color: palette.muted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExploreCard extends StatelessWidget {
+  const _ExploreCard({
+    required this.emoji,
+    required this.title,
+    required this.body,
+    this.onTap,
+  });
+
+  final String emoji;
+  final String title;
+  final String body;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: palette.surfaceCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: palette.hairline.withOpacity(0.6)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: palette.surfaceCreamStrong,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                ),
+                const Spacer(),
+                Icon(Icons.arrow_forward, size: 16, color: palette.muted),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              body,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: palette.muted, height: 1.5),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }

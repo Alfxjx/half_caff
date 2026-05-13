@@ -121,6 +121,11 @@
   "drinkGreenTea": "Green Tea",
   "drinkCola": "Cola",
   "drinkEnergyDrink": "Energy Drink",
+  "drinkDoubleEspresso": "Double Espresso",
+  "drinkLargeDrip": "Large Drip",
+  "drinkLargeColdBrew": "Large Cold Brew",
+  "drinkInstantCoffee": "Instant Coffee",
+  "drinkCappuccino": "Cappuccino",
   "minutesAgo": "{count} min ago",
   "@minutesAgo": {
     "placeholders": {

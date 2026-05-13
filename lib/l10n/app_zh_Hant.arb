@@ -121,6 +121,11 @@
   "drinkGreenTea": "綠茶",
   "drinkCola": "可樂",
   "drinkEnergyDrink": "能量飲料",
+  "drinkDoubleEspresso": "雙份濃縮",
+  "drinkLargeDrip": "大杯滴濾",
+  "drinkLargeColdBrew": "大杯冷萃",
+  "drinkInstantCoffee": "速溶咖啡",
+  "drinkCappuccino": "卡布奇諾",
   "minutesAgo": "{count} 分鐘前",
   "@minutesAgo": {
     "placeholders": {
