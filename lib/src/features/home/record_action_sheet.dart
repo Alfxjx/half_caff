@@ -31,6 +31,8 @@ class _RecordActionSheetContent extends StatefulWidget {
 }
 
 class _RecordActionSheetState extends State<_RecordActionSheetContent> {
+  bool _showAll = false;
+
   @override
   void initState() {
     super.initState();
@@ -47,13 +49,31 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _showPresetEditSheet(
+  List<DrinkItem> _rankedDrinks() {
+    final freq = <String, int>{};
+    for (final r in widget.controller.records) {
+      if (r.sourceDrinkId != null) {
+        freq[r.sourceDrinkId!] = (freq[r.sourceDrinkId!] ?? 0) + 1;
+      }
+    }
+    final drinks = List<DrinkItem>.from(widget.controller.availableDrinks);
+    drinks.sort((a, b) {
+      final countA = freq[a.id] ?? 0;
+      final countB = freq[b.id] ?? 0;
+      if (countA != countB) return countB.compareTo(countA);
+      return 0;
+    });
+    return drinks;
+  }
+
+  Future<void> _showTempEditSheet(
       BuildContext context, DrinkItem drink) async {
     final l10n = AppLocalizations.of(context)!;
     final defaultName = displayNameForDrink(l10n, drink);
-    final nameController = TextEditingController(text: defaultName);
-    final amountController =
+    final caffeineController =
         TextEditingController(text: drink.caffeineMg.toString());
+    final volumeController =
+        TextEditingController(text: drink.volumeMl.toString());
 
     await showModalBottomSheet<void>(
       context: context,
@@ -63,26 +83,27 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
         return SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-                20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+                16, 0, 16, 20 + MediaQuery.of(context).viewInsets.bottom),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.editRecordTitle,
+                  defaultName,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(labelText: l10n.customNameLabel),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: amountController,
+                  controller: caffeineController,
                   keyboardType: TextInputType.number,
                   decoration:
                       InputDecoration(labelText: l10n.caffeineAmountLabel),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: volumeController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: l10n.volumeLabel),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -94,26 +115,22 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
                     const Spacer(),
                     FilledButton(
                       onPressed: () async {
-                        final name = nameController.text.trim();
-                        final amount =
-                            int.tryParse(amountController.text.trim());
-                        if (name.isEmpty || amount == null || amount <= 0)
-                          return;
-                        final shouldClearCustomName = name == defaultName;
-                        await widget.controller.updateDrinkPreset(
-                          drink.copyWith(
-                            caffeineMg: amount,
-                            customName: shouldClearCustomName ? null : name,
-                            clearCustomName: shouldClearCustomName,
-                          ),
+                        final caffeine =
+                            int.tryParse(caffeineController.text.trim());
+                        final volume =
+                            int.tryParse(volumeController.text.trim());
+                        if (caffeine == null || caffeine <= 0) return;
+                        final modified = drink.copyWith(
+                          caffeineMg: caffeine,
+                          volumeMl: volume ?? drink.volumeMl,
                         );
+                        await widget.controller
+                            .addDrink(modified, DateTime.now());
                         if (!context.mounted) return;
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(l10n.presetUpdatedMessage)),
-                        );
+                        Navigator.of(context).pop();
                       },
-                      child: Text(l10n.updateLabel),
+                      child: Text(l10n.saveLabel),
                     ),
                   ],
                 ),
@@ -123,79 +140,112 @@ class _RecordActionSheetState extends State<_RecordActionSheetContent> {
         );
       },
     );
-    nameController.dispose();
-    amountController.dispose();
+    caffeineController.dispose();
+    volumeController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final palette = context.palette;
+    final allDrinks = _rankedDrinks();
+    final displayDrinks = _showAll ? allDrinks : allDrinks.take(5).toList();
+    final canExpand = allDrinks.length > 5;
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.recordHeadline,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.quickAddLabel,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+                Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    l10n.recordHeadline,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-            ),
-            const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: MediaQuery.of(context).size.width > 420 ? 4 : 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio:
-                    MediaQuery.of(context).size.width > 420 ? 0.85 : 1.1,
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      showRecordEditorSheet(context, widget.controller);
+                    },
+                    icon: const Icon(Icons.edit_note_outlined, size: 18),
+                    label: Text(l10n.customRecordButton),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
               ),
-              itemCount: widget.controller.availableDrinks.length,
-              itemBuilder: (context, index) {
-                final drink = widget.controller.availableDrinks[index];
-                return _DrinkTile(
-                  emoji: drink.emoji,
-                  name: displayNameForDrink(l10n, drink),
-                  caffeine: '${drink.caffeineMg}mg',
-                  onTap: () {
-                    widget.controller.addDrink(drink, DateTime.now());
-                    Navigator.of(context).pop();
-                  },
-                  onLongPress: () => _showPresetEditSheet(context, drink),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                showRecordEditorSheet(context, widget.controller);
-              },
-              icon: const Icon(Icons.edit_note_outlined),
-              label: Text(l10n.customRecordButton),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: palette.paperAlt.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: palette.hairline.withOpacity(0.6)),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (var i = 0; i < displayDrinks.length; i++) ...[
+                        _DrinkListTile(
+                          emoji: displayDrinks[i].emoji,
+                          name: displayNameForDrink(l10n, displayDrinks[i]),
+                          caffeine: '${displayDrinks[i].caffeineMg}mg',
+                          volume: '${displayDrinks[i].volumeMl}ml',
+                          onTap: () {
+                            widget.controller
+                                .addDrink(displayDrinks[i], DateTime.now());
+                            Navigator.of(context).pop();
+                          },
+                          onLongPress: () =>
+                              _showTempEditSheet(context, displayDrinks[i]),
+                        ),
+                        if (i < displayDrinks.length - 1)
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: palette.hairline.withOpacity(0.5),
+                          ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              if (canExpand) ...[
+                const SizedBox(height: 4),
+                Center(
+                  child: TextButton(
+                    onPressed: () => setState(() => _showAll = !_showAll),
+                    child: Text(
+                      _showAll ? '收起' : '展开全部',
+                      style: TextStyle(color: palette.primary),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _DrinkTile extends StatelessWidget {
-  const _DrinkTile({
+class _DrinkListTile extends StatelessWidget {
+  const _DrinkListTile({
     required this.emoji,
     required this.name,
     required this.caffeine,
+    required this.volume,
     required this.onTap,
     this.onLongPress,
   });
@@ -203,6 +253,7 @@ class _DrinkTile extends StatelessWidget {
   final String emoji;
   final String name;
   final String caffeine;
+  final String volume;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
 
@@ -212,45 +263,53 @@ class _DrinkTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       onLongPress: onLongPress,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: palette.paperAlt.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: palette.hairline.withOpacity(0.6)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 30,
+              height: 30,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: palette.surfaceCard,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: palette.hairline.withOpacity(0.5)),
               ),
-              child: Text(emoji, style: const TextStyle(fontSize: 18)),
+              child: Text(emoji, style: const TextStyle(fontSize: 16)),
             ),
-            const Spacer(),
-            Text(
-              name,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              caffeine,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: palette.primary,
-                fontFeatures: const [FontFeature.tabularFigures()],
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                name,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  caffeine,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: palette.primary,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                ),
+                Text(
+                  volume,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: palette.muted,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                ),
+              ],
             ),
           ],
         ),
